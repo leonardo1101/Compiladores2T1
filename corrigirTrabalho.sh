@@ -10,4 +10,4 @@ casosTeste=$path"/casosDeTesteT1/"
 
 
 
-java -jar $javas "\"$compiladorJar\"" gcc $pastaTemp $casosTeste "726556" tudo 
+java -jar $javas "\"$compiladorJar\"" gcc $pastaTemp $casosTeste "726556,726580,726568,726586" tudo 
