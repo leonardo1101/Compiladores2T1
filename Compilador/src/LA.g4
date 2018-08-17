@@ -5,6 +5,9 @@ fragment LetraMaiuscula : ('A'..'Z');
 fragment Letra: LetraMinuscula | LetraMaiuscula;
 fragment Digito : ('0'..'9');
 
+CADEIA:'"' (Letra | Digito)* '"';
+NUM_INT: Digito Digito*;
+NUM_REAL: Digito Digito* '.' Digito Digito*;
 IDENT: (Letra|'_')(Letra|'_'|Digito)* ;
 
 
