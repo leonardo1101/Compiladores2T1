@@ -1,25 +1,30 @@
 
+import java.io.FileInputStream;
 import java.io.IOException;
+
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.RecognitionException;
+import sun.jvm.hotspot.debugger.win32.coff.COMDATSelectionTypes;
 
 public class Compilador {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException, RecognitionException {
+        //Cria a saida
         SaidaParser out = new SaidaParser();
 
-        ANTLRInputStream input = new ANTLRInputStream(Compilador.class.getResourceAsStream("exemplos/lua5.txt"));
-        LuaLexer lexer = new LuaLexer(input);
+        //Para quando for gerar o jar, utilizar a linha abaixo em vez da outra, pois iremos recever o c�digo por argumento
+        //ANTLRInputStream input = new ANTLRInputStream(new FileInputStream(args[0]));
+
+        ANTLRInputStream input = new ANTLRInputStream(Compilador.class.getResourceAsStream("entrada/la1.txt"));
+
+        LALexer lexer = new LALexer(input);
+
         CommonTokenStream tokens = new CommonTokenStream(lexer);
-        LuaParser parser = new LuaParser(tokens);
+        LAParser parser = new LAParser(tokens);
         parser.addErrorListener(new ErrorListener(out));
         parser.programa();
-        if (!out.isModificado()) {
-            out.println("Fim da analise. Sem erros sintaticos.");
-        } else {
-            out.println("Fim da analise. Com erros sintaticos.");
-        }
+        out.println("Fim da compilacao");
 
     }
 }

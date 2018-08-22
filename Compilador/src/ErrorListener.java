@@ -1,8 +1,6 @@
 import java.util.BitSet;
-import org.antlr.v4.runtime.ANTLRErrorListener;
-import org.antlr.v4.runtime.Parser;
-import org.antlr.v4.runtime.RecognitionException;
-import org.antlr.v4.runtime.Recognizer;
+
+import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
 
@@ -17,22 +15,47 @@ public class ErrorListener implements ANTLRErrorListener{
 
     @Override
     public void syntaxError(Recognizer<?, ?> rcgnzr, Object o, int i, int i1, String string, RecognitionException re) {
+
+        //Transforma o objeto em um common token
+        CommonToken ct = (CommonToken) o;
+        //Caso a saida fora modificada
         if (!sp.isModificado()) {
-            sp.println("Erro: linha " + i + ":" + i1 + "\nFim da compilacao");
+            //Verifica erro de simbolo n�o identificado
+            if(ct.getType() == LALexer.ERROCHAR){
+                sp.println("Linha " + i + " : " + ct.getText()+ " - simbolo nao identificado");
+
+                //Verifica erro de coment�rio n�o fechado
+            }else if( ct.getType() == LALexer.COMMENTNFECHADO ){
+                sp.println("Linha " + (i+1) + " : comentario nao fechado");
+            }else{
+                //Verifica erro de fim de arquivo e tambem de erro sintatico proxima de uma palavra
+                if (ct.getText().equals("<EOF>")){
+                    sp.println("Linha " + i + ": erro sintatico proximo a EOF");
+                } else {
+                    sp.println("Linha " + i + ": erro sintatico proximo a " + ct.getText());
+                }
+            }
         }
-    }
-    @Override
-    public void reportAmbiguity(Parser parser, DFA dfa, int i, int i1, BitSet bitset, ATNConfigSet atncs) {
-        if (!sp.isModificado()) {
-            sp.println("Ambiguidade: linha " + i + ":" + i1);
-        }
-    }
-    @Override
-    public void reportAttemptingFullContext(Parser parser, DFA dfa, int i, int i1, ATNConfigSet atncs) {
     }
 
     @Override
-    public void reportContextSensitivity(Parser parser, DFA dfa, int i, int i1, ATNConfigSet atncs) {
+    public void reportAmbiguity(Parser parser, DFA dfa, int i, int i1, boolean b, BitSet bitSet, ATNConfigSet atnConfigSet) {
+     //   if (!sp.isModificado()) {
+     //       sp.println("Ambiguidade: linha " + i + ":" + i1);
+     //   }
+
     }
+
+    @Override
+    public void reportAttemptingFullContext(Parser parser, DFA dfa, int i, int i1, BitSet bitSet, ATNConfigSet atnConfigSet) {
+
+    }
+
+    @Override
+    public void reportContextSensitivity(Parser parser, DFA dfa, int i, int i1, int i2, ATNConfigSet atnConfigSet) {
+
+    }
+
+
 
 }

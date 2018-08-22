@@ -10,6 +10,10 @@ NUM_INT: Digito Digito*;
 NUM_REAL: Digito Digito* '.' Digito Digito*;
 IDENT: (Letra|'_')(Letra|'_'|Digito)* ;
 
+COMMENT : '{'.*?'}' -> skip;
+COMMENTNFECHADO: '{' .*? ;
+WS	:	(' ' | '\t' | '\r' | '\n') -> skip;
+ERROCHAR:.;
 
 op1 : '+' | '-';
 op2 : '*' | '/';
@@ -38,7 +42,7 @@ registro : 'registro' variavel* 'fim_registro';
 declaracao_global : 'procedimento' IDENT '(' parametros? ')' ':' tipo_estendido declaracao_local* cmd* 'fim_funcao';
 parametro : 'var'? identificador (',' identificador)* ':' tipo_estendido;
 parametros : parametro (',' parametro)*;
-corpo : (declaracao_local)* {cmd};
+corpo : (declaracao_local)* cmd*;
 cmd : cmdLeia | cmdEscreva | cmdSe | cmdCaso | cmdPara | cmdEnquanto | cmdFaca | cmdAtribuicao | cmdChamada | cmdRetorne;
 cmdLeia : 'leia' '(' '^'? identificador (',' expressao)* ')';
 cmdEscreva : 'escreva' '(' expressao ( ',' expressao)* ')';
