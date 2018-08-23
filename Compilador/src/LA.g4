@@ -5,13 +5,15 @@ fragment LetraMaiuscula : ('A'..'Z');
 fragment Letra: LetraMinuscula | LetraMaiuscula;
 fragment Digito : ('0'..'9');
 
-CADEIA:'"' (Letra | Digito)* '"';
+//CADEIA: '"' ~('\n'|'\r'|'"')* '"';
+CADEIA: '"' (~('\n'|'"'))* '"';
+//CADEIA: ('\'' | '"')(~('\'' | '"'))*('\'' | '"');
 NUM_INT: Digito Digito*;
 NUM_REAL: Digito Digito* '.' Digito Digito*;
 IDENT: (Letra|'_')(Letra|'_'|Digito)* ;
 
-COMMENT : '{'.*?'}' -> skip;
-COMMENTNFECHADO: '{' .*? ;
+COMMENT : '{' (~('\n'|'\r'|'}'))* '}' -> skip;
+COMMENTNFECHADO: '{' (~('\n'|'\r'|'}'))*  '\n';
 WS	:	(' ' | '\t' | '\r' | '\n') -> skip;
 ERROCHAR:.;
 
