@@ -21,7 +21,7 @@ public class Compilador {
             //Para quando for gerar o jar, utilizar a linha abaixo em vez da outra, pois iremos recever o c�digo por argumento
             //ANTLRInputStream input = new ANTLRInputStream(new FileInputStream(casoTeste));
 
-        CharStream input = CharStreams.fromFileName(args[0]);
+         CharStream input = CharStreams.fromFileName(args[0]);
 
             LALexer lexer = new LALexer(input);
 
