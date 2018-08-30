@@ -106,7 +106,7 @@ termo : fator (op2 fator)*;
 fator : parcela (op3 parcela)*;
 parcela : op_unario? parcela_unario | parcela_nao_unario;
 
-parcela_unario : '^'? identificador | IDENT '(' expressao (',' expressao)? ')' | NUM_INT | NUM_REAL | '(' expressao ')';
+parcela_unario : '^'? identificador | IDENT '(' expressao (',' expressao)* ')' | NUM_INT | NUM_REAL | '(' expressao ')';
 parcela_nao_unario : '&' identificador | CADEIA;
 
 

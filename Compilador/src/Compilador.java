@@ -27,7 +27,7 @@ public class Compilador {
 
             CommonTokenStream tokens = new CommonTokenStream(lexer);
             LAParser parser = new LAParser(tokens);
-            parser.removeErrorListeners();
+            //parser.removeErrorListeners();
             parser.addErrorListener(new ErrorListener(out));
             parser.programa();
             if(!out.isModificado()){
