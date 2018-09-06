@@ -29,7 +29,9 @@ declaracoes : decl_local_global*;
 
 decl_local_global : declaracao_local | declaracao_global;
 
-declaracao_local : 'declare' variavel | 'constante' IDENT ':' tipo_basico '=' valor_constante | 'tipo' IDENT ':' tipo;
+declaracao_local : 'declare' variavel |
+                    'constante' nome=IDENT ':' tipo_basico '=' valor_constante |
+                    'tipo' nome1=IDENT ':' tipo ;
 
 variavel : identificador (',' (identificador | IDENT) )* ':' tipo;
 
