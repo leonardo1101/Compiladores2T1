@@ -7,32 +7,42 @@ public class Visitor extends LABaseVisitor {
 
     @Override
     public Object visitPrograma(LAParser.ProgramaContext ctx) {
-        if(ctx.declaracoes() != null){
-            visitDeclaracoes(ctx.declaracoes());
-        }
-        if(ctx.corpo() != null){
-            visitCorpo(ctx.corpo());
-        }
+        pilhaDeTabelas.empilhar(new TabelaDeSimbolos("global"));
+
+        super.visitPrograma(ctx);
+
+        pilhaDeTabelas.desempilhar();
 
         return null;
     }
 
-    @Override
-    public Object visitDeclaracoes(LAParser.DeclaracoesContext ctx) {
-
-        for(LAParser.Decl_local_globalContext d: ctx.decl_local_global()) {
-            visitDecl_local_global(d);
-        }
-        return null;
-    }
+//    @Override
+//    public Object visitDeclaracoes(LAParser.DeclaracoesContext ctx) {
+//
+//        for(LAParser.Decl_local_globalContext d: ctx.decl_local_global()) {
+//            visitDecl_local_global(d);
+//        }
+//        return null;
+//    }
 
     @Override
     public Object visitDecl_local_global(LAParser.Decl_local_globalContext ctx) {
+        int[] vetor = new int[30];
+
+        for(int indice = 0;indice < vetor.length; indice ++) {
+            int x = vetor[indice];
+        }
+
+        for(String x : vetor) {
+
+        }
+
+
         if(ctx.declaracao_global() != null){
-            return visitDeclaracao_global(ctx.declaracao_global());
+            visitDeclaracao_global(ctx.declaracao_global());
         }
         if (ctx.declaracao_local() != null){
-            return visitDeclaracao_local(ctx.declaracao_local());
+            visitDeclaracao_local(ctx.declaracao_local());
         }
 
         return null;
@@ -73,8 +83,16 @@ public class Visitor extends LABaseVisitor {
         return null;
     }
 
+    @Override
+    public Object visitDeclaracao_global_funcao(LAParser.Declaracao_global_funcaoContext ctx) {
+        pilhaDeTabelas.empilhar(new TabelaDeSimbolos(ctx.IDENT().getText()));
 
-    /*@Override
+        super.visitDeclaracao_global_funcao(ctx);
+
+        pilhaDeTabelas.desempilhar();
+    }
+
+/*@Override
     public Object visitDeclaracao_global(LAParser.Declaracao_globalContext ctx) {
         TabelaDeSimbolos escopoAtual = pilhaDeTabelas.topo();
         if(escopoAtual.existeSimbolo(ctx.nome.getText())) {

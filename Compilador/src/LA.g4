@@ -49,7 +49,8 @@ valor_constante : CADEIA | NUM_INT | NUM_REAL | 'verdadeiro' | 'falso';
 
 registro : 'registro' variavel* 'fim_registro';
 
-declaracao_global : 'procedimento' IDENT '(' parametros? ')'  declaracao_local* cmd* 'fim_procedimento'| 'funcao' IDENT '(' parametros?  ')' ':' tipo_estendido declaracao_local* cmd* 'fim_funcao' ;
+declaracao_global : 'procedimento' IDENT '(' parametros? ')'  declaracao_local* cmd* 'fim_procedimento' # declaracao_global_procedimento
+                | 'funcao' IDENT '(' parametros?  ')' ':' tipo_estendido declaracao_local* cmd* 'fim_funcao' # declaracao_global_funcao;
 
 
 parametro : 'var'? identificador (',' identificador)* ':' tipo_estendido;
