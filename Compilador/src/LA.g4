@@ -29,13 +29,13 @@ declaracoes : decl_local_global*;
 
 decl_local_global : declaracao_local | declaracao_global;
 
-declaracao_local : 'declare' variavel |
-                    'constante' nome=IDENT ':' tipo_basico '=' valor_constante |
-                    'tipo' nome1=IDENT ':' tipo ;
+declaracao_local : 'declare' variavel # declaracao_local_variavel |
+                    'constante' nome=IDENT ':' tipo_basico '=' valor_constante  # declaracao_local_constante|
+                    'tipo' nome1=IDENT ':' tipo # declaracao_local_tipo;
 
 variavel : identificador (',' (identificador | IDENT) )* ':' tipo;
 
-identificador : IDENT ('.' IDENT)* dimensao;
+identificador : nome2=IDENT ('.' IDENT)* dimensao;
 
 dimensao : ('[' exp_aritmetica ']')*;
 
@@ -45,7 +45,11 @@ tipo_basico_ident : tipo_basico | IDENT;
 
 tipo_estendido : '^'? tipo_basico_ident;
 
-valor_constante : CADEIA | NUM_INT | NUM_REAL | 'verdadeiro' | 'falso';
+valor_constante : CADEIA # valor_constante_cadeia
+                    | NUM_INT # valor_constante_int
+                    | NUM_REAL # valor_constante_real
+                    | 'verdadeiro' # valor_constante_verdadeiro
+                    | 'falso' #valor_constante_falso;
 
 registro : 'registro' variavel* 'fim_registro';
 
@@ -103,21 +107,26 @@ numero_intervalo : op_unario? NUM_INT ('..' op_unario? NUM_INT)?;
 
 op_unario : '-';
 
-exp_aritmetica : termo (op1 termo)* ;
-termo : fator (op2 fator)*;
+exp_aritmetica : termo1=termo (op1 outrosTermos+=termo)* ;
+termo : fator1=fator (op2 outrosFatores+=fator)*;
 
-fator : parcela (op3 parcela)*;
+fator : parcela1=parcela (op3 outrasParcelas+=parcela)*;
 parcela : op_unario? parcela_unario | parcela_nao_unario;
 
-parcela_unario : '^'? identificador | IDENT '(' expressao (',' expressao)* ')' | NUM_INT | NUM_REAL | '(' expressao ')';
-parcela_nao_unario : '&' identificador | CADEIA;
+parcela_unario : '^'? identificador # parcela_unario_identificador
+                  | IDENT '(' expressao (',' expressao)* ')' # parcela_unario_ident
+                  | NUM_INT # parcela_unario_int
+                  | NUM_REAL # parcela_unario_real
+                  | '(' expressao ')'  # parcela_unario_exp ;
+
+parcela_nao_unario : '&' identificador | CADEIA ;
 
 
 exp_relacional : exp_aritmetica (op_relacional exp_aritmetica)?;
 
-expressao : termo_logico (op_logico_1 termo_logico)*;
+expressao : termo_logico1=termo_logico (op_logico_1 outrosTermos_Logicos+=termo_logico)*;
 
 
-termo_logico : fator_logico (op_logico_2 fator_logico)*;
+termo_logico : fator_logico1=fator_logico (op_logico_2 outrosFatores_Logicos=fator_logico)*;
 fator_logico : 'nao'? parcela_logica;
 parcela_logica : ('verdadeiro' | 'falso') | exp_relacional;

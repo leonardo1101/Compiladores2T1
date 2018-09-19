@@ -2,7 +2,7 @@
 import java.io.*;
 
 import org.antlr.v4.runtime.*;
-import sun.jvm.hotspot.debugger.win32.coff.COMDATSelectionTypes;
+//import sun.jvm.hotspot.debugger.win32.coff.COMDATSelectionTypes;
 
 public class Compilador {
 
@@ -30,7 +30,14 @@ public class Compilador {
             //parser.removeErrorListeners();
             parser.addErrorListener(new ErrorListener(out));
             parser.programa();
+            LAParser.ProgramaContext arvore = parser.programa();
+
+            Visitor v = new Visitor();   //leo colocou isso agora mas n funcionou parece
+            v.setTokenStream(tokens);
+            v.visitPrograma(arvore);
+
             if(!out.isModificado()){
+
                 out.println("Fim sem erros");
             }
 
