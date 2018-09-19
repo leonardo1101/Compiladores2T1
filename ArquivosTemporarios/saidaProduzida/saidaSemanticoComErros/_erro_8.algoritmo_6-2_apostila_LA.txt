@@ -1,2 +1,2 @@
-Linha 25: erro sintatico proximo a EOF
+Linha 5: tipo sem_tipo nao declarado
 Fim da compilacao

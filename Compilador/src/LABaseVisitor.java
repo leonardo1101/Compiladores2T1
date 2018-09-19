@@ -114,6 +114,13 @@ public class LABaseVisitor<T> extends AbstractParseTreeVisitor<T> implements LAV
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
+	@Override public T visitIdentificador_var(LAParser.Identificador_varContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
 	@Override public T visitIdentificador(LAParser.IdentificadorContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}

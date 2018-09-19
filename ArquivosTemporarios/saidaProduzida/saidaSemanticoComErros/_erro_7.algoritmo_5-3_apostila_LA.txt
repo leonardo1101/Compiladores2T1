@@ -1,2 +1,2 @@
-Linha 30: erro sintatico proximo a EOF
+Fim sem erros
 Fim da compilacao

@@ -16,7 +16,7 @@ public class Compilador {
         //int casosTesteErrados = 0;
         //for(File casoTeste : casosTeste){
             //Cria a saida
-            SaidaParser out = new SaidaParser();
+            Saida out = new Saida();
 
             //Para quando for gerar o jar, utilizar a linha abaixo em vez da outra, pois iremos recever o c�digo por argumento
             //ANTLRInputStream input = new ANTLRInputStream(new FileInputStream(casoTeste));
@@ -27,18 +27,17 @@ public class Compilador {
 
             CommonTokenStream tokens = new CommonTokenStream(lexer);
             LAParser parser = new LAParser(tokens);
-            //parser.removeErrorListeners();
+          //  parser.removeErrorListeners();
             parser.addErrorListener(new ErrorListener(out));
-            parser.programa();
             LAParser.ProgramaContext arvore = parser.programa();
 
-            Visitor v = new Visitor();   //leo colocou isso agora mas n funcionou parece
-            v.setTokenStream(tokens);
-            v.visitPrograma(arvore);
 
             if(!out.isModificado()){
-
-                out.println("Fim sem erros");
+                Visitor v = new Visitor();   //leo colocou isso agora mas n funcionou parece
+                v.setTokenStream(tokens);
+                v.visitPrograma(arvore);
+                if(!out.isModificado())
+                    out.println("Fim sem erros");
             }
 
             try(PrintWriter pw = new PrintWriter(new FileWriter(args[1]))) {

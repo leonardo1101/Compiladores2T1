@@ -7,9 +7,9 @@ import org.antlr.v4.runtime.dfa.DFA;
 
 public class ErrorListener implements ANTLRErrorListener{
 
-    SaidaParser sp;
+    Saida sp;
 
-    public ErrorListener(SaidaParser sp) {
+    public ErrorListener(Saida sp) {
         this.sp = sp;
     }
 

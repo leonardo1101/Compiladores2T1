@@ -33,15 +33,17 @@ declaracao_local : 'declare' variavel # declaracao_local_variavel |
                     'constante' nome=IDENT ':' tipo_basico '=' valor_constante  # declaracao_local_constante|
                     'tipo' nome1=IDENT ':' tipo # declaracao_local_tipo;
 
-variavel : identificador (',' (identificador | IDENT) )* ':' tipo;
+variavel : identificador_var (',' (identificador_var | IDENT) )* ':' tipo;
 
-identificador : nome2=IDENT ('.' IDENT)* dimensao;
+identificador_var : nome2=IDENT ('.' IDENT)* dimensao;
+
+identificador : nome3=IDENT ('.' IDENT)* dimensao;
 
 dimensao : ('[' exp_aritmetica ']')*;
 
 tipo : registro | tipo_estendido;
 
-tipo_basico_ident : tipo_basico | IDENT;
+tipo_basico_ident : tipo_basico | nome4=IDENT;
 
 tipo_estendido : '^'? tipo_basico_ident;
 

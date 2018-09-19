@@ -183,6 +183,18 @@ public class LABaseListener implements LAListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterIdentificador_var(LAParser.Identificador_varContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitIdentificador_var(LAParser.Identificador_varContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterIdentificador(LAParser.IdentificadorContext ctx) { }
 	/**
 	 * {@inheritDoc}

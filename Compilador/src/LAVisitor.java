@@ -97,6 +97,12 @@ public interface LAVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitVariavel(LAParser.VariavelContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link LAParser#identificador_var}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitIdentificador_var(LAParser.Identificador_varContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link LAParser#identificador}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

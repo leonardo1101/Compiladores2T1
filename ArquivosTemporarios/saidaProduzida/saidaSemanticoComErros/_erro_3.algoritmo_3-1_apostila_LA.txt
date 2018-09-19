@@ -1,2 +1,2 @@
-Linha 23: erro sintatico proximo a EOF
+Linha 6: identificador troco ja declarado anteriormente
 Fim da compilacao

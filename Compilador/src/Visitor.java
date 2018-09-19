@@ -34,7 +34,8 @@ public class Visitor extends LABaseVisitor {
         if(!escopoAtual.existeSimbolo(ctx.nome.getText())) {
                 escopoAtual.adicionarSimbolo(ctx.nome.getText(), tipo);
         } else{
-               throw new RuntimeException("Erro semantico: " + ctx.nome.getText() + "declarada duas vezes num mesmo escopo");
+            Saida.println("Linha "+ctx.nome.getLine()+": identificador " +ctx.nome.getText()+ " ja declarado anteriormente");
+
         }
 
         super.visitDeclaracao_local_constante(ctx); // talvez precise deixar isso aqui pra ele visitar os filhos, precisa confirmar
@@ -50,7 +51,8 @@ public class Visitor extends LABaseVisitor {
         if(!escopoAtual.existeSimbolo(ctx.nome1.getText())) {
                escopoAtual.adicionarSimbolo(ctx.nome1.getText(), tipo);
         } else{
-            throw new RuntimeException("Erro semantico: " + ctx.nome1.getText() + "declarada duas vezes num mesmo escopo");
+            Saida.println("Linha "+ctx.nome1.getLine()+": identificador " +ctx.nome1.getText()+ " ja declarado anteriormente");
+
         }
 
         super.visitDeclaracao_local_tipo(ctx); // talvez precise deixar isso aqui pra ele visitar os filhos, precisa confirmar
@@ -81,15 +83,28 @@ public class Visitor extends LABaseVisitor {
     }
 
     @Override
-    public Object visitIdentificador(LAParser.IdentificadorContext ctx) {
-
+    public Object visitIdentificador_var(LAParser.Identificador_varContext ctx) {
         TabelaDeSimbolos escopoAtual = pilhaDeTabelas.topo();
         String tipo = ""; //ctx.nome2.getType()
 
-        if(!escopoAtual.existeSimbolo(ctx.nome2.getText())) {
+        if (!escopoAtual.existeSimbolo(ctx.nome2.getText())) {
             escopoAtual.adicionarSimbolo(ctx.nome2.getText(), tipo);
-        } else{
-            throw new RuntimeException("Erro semantico: " + ctx.nome2.getText() + "declarada duas vezes num mesmo escopo");
+        } else {
+            Saida.println("Linha "+ctx.nome2.getLine()+": identificador " +ctx.nome2.getText()+ " ja declarado anteriormente");
+        }
+
+        super.visitIdentificador_var(ctx); // talvez precise deixar isso aqui pra ele visitar os filhos, precisa confirmar
+
+        return null;
+    }
+
+    @Override
+    public Object visitIdentificador(LAParser.IdentificadorContext ctx) {
+        System.out.println("Entrou");
+        System.out.println(ctx.nome3.getText());
+        System.out.println(pilhaDeTabelas);
+        if(!pilhaDeTabelas.existeSimbolo(ctx.nome3.getText())) {
+            Saida.println("Linha "+ctx.nome3.getLine()+": identificador " + ctx.nome3.getText() + " nao declarado");
         }
 
         super.visitIdentificador(ctx); // talvez precise deixar isso aqui pra ele visitar os filhos, precisa confirmar
@@ -99,52 +114,22 @@ public class Visitor extends LABaseVisitor {
 
     @Override
     public Double visitExp_aritmetica(LAParser.Exp_aritmeticaContext ctx) {
-        double valor = (double) visitTermo(ctx.termo1);
-        for(int i=0; i<ctx.outrosTermos.size(); i++){
-            LAParser.Op1Context op1 = ctx.op1(i);
-            LAParser.TermoContext ot = ctx.outrosTermos.get(i);
-            String strOp1 = op1.getText();
-            if(strOp1.equals("+")){
-                valor +=  (double) visitTermo(ot);
-            } else {
-                valor -=  (double) visitTermo(ot);
-            }
-        }
 
-        return valor;
+
+        return null;
     }
 
     @Override
     public Double visitTermo(LAParser.TermoContext ctx) {
-        double valor = (double) visitFator(ctx.fator1);
-        for(int i=0; i<ctx.outrosFatores.size(); i++){
-            LAParser.Op2Context op2 = ctx.op2(i);
-            LAParser.FatorContext of = ctx.outrosFatores.get(i);
-            String strOp2 = op2.getText();
-            if(strOp2.equals("*")){
-                valor *=  (double) visitFator(of);
-            } else {
-                valor /=  (double) visitFator(of);
-            }
-        }
 
-        return valor;
+        return null;
     }
 
 
     @Override
     public Double visitFator(LAParser.FatorContext ctx) {
-        double valor = (double) visitParcela(ctx.parcela1);
-        for(int i=0; i<ctx.outrasParcelas.size(); i++) {
-            LAParser.Op3Context op3 = ctx.op3(0);
-            LAParser.ParcelaContext op = ctx.outrasParcelas.get(i);
-            String strOp3 = op3.getText();
-            if (strOp3.equals("%")) {
-                valor %= (double) visitParcela(op);
-            }
-        }
 
-        return valor;
+        return null;
     }
 
 
@@ -158,7 +143,7 @@ public class Visitor extends LABaseVisitor {
             if(etds){
                 return ctx.IDENT().getText();
             }else {
-                throw new RuntimeException("Erro semantico: " + ctx.IDENT().getText() + "Nao foi declara anteriormente");
+                Saida.println("Linha "+ctx.getStart().getLine()+": identificador " +ctx.IDENT().getText()+ " nao declarado");
             }
         }
 
@@ -174,7 +159,7 @@ public class Visitor extends LABaseVisitor {
             if(etds){
                 return ctx.NUM_INT().getText();
             }else {
-                throw new RuntimeException("Erro semantico: " + ctx.NUM_INT().getText() + "Nao foi declara anteriormente");
+                Saida.println("Linha "+ctx.getStart().getLine()+": identificador " +ctx.NUM_INT().getText()+ " nao declarado");
             }
         }
 
@@ -190,7 +175,7 @@ public class Visitor extends LABaseVisitor {
             if(etds){
                 return ctx.NUM_REAL().getText();
             }else {
-                throw new RuntimeException("Erro semantico: " + ctx.NUM_REAL().getText() + "Nao foi declara anteriormente");
+                Saida.println("Linha "+ctx.getStart().getLine()+": identificador " +ctx.NUM_REAL().getText()+ " nao declarado");
             }
         }
 
@@ -234,17 +219,9 @@ public class Visitor extends LABaseVisitor {
 
     @Override
     public Boolean visitExpressao(LAParser.ExpressaoContext ctx) {
-        boolean valor = (boolean) visitTermo_logico(ctx.termo_logico1);
-        for(int i=0; i<ctx.outrosTermos_Logicos.size(); i++){
-            LAParser.Op_logico_1Context opl1 = ctx.op_logico_1(i);
-            LAParser.Termo_logicoContext otl = ctx.outrosTermos_Logicos.get(i);
-            String strOp1 = opl1.getText();
-            if(strOp1.equals("ou")){
-                valor |=  (boolean) visitTermo_logico(otl);
-            }
-        }
 
-        return valor;
+
+        return null;
     }
 
 
@@ -255,11 +232,19 @@ public class Visitor extends LABaseVisitor {
     public Object visitTipo_basico_ident(LAParser.Tipo_basico_identContext ctx) {
 
         if(ctx.IDENT() != null){
-            return ctx.IDENT().getText();
+            if(ctx.IDENT().getText().equals("literal")
+                    || ctx.IDENT().getText().equals("inteiro")
+                    || ctx.IDENT().getText().equals("real")
+                    || ctx.IDENT().getText().equals("logico")){
+
+                return ctx.nome4.getText();
+            } else{
+                Saida.println("Linha "+ctx.nome4.getLine()+": tipo " + ctx.nome4.getText() + " nao declarado");
+            }
         }else {
             return super.visitTipo_basico(ctx.tipo_basico());
         }
-
+        return null;
     }
 
     @Override
@@ -345,7 +330,8 @@ public class Visitor extends LABaseVisitor {
             if(etds){
                 ctx.IDENT().getText();
             }else {
-                throw new RuntimeException("Erro semantico: " + ctx.IDENT().getText() + "Funçao inexistente");
+                Saida.println("Erro semantico: " + ctx.IDENT().getText() + "Funçao inexistente");
+
             }
         }
 

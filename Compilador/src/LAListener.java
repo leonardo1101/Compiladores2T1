@@ -153,6 +153,16 @@ public interface LAListener extends ParseTreeListener {
 	 */
 	void exitVariavel(LAParser.VariavelContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link LAParser#identificador_var}.
+	 * @param ctx the parse tree
+	 */
+	void enterIdentificador_var(LAParser.Identificador_varContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link LAParser#identificador_var}.
+	 * @param ctx the parse tree
+	 */
+	void exitIdentificador_var(LAParser.Identificador_varContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link LAParser#identificador}.
 	 * @param ctx the parse tree
 	 */
