@@ -72,10 +72,10 @@ cmd : cmdLeia | cmdEscreva | cmdSe | cmdCaso | cmdPara | cmdEnquanto | cmdFaca |
 
 cmdLeia : 'leia' '(' '^'? leiaIDENT=identificador (',' '^'? identificador)* ')';
 
-cmdEscreva : 'escreva' '(' escrevaExpr=expressao ( ',' expressao)* ')';
+cmdEscreva : 'escreva' '(' escrevaExpr=expressao ( ',' complementoExpr=expressao)* ')';
 
 
-cmdSe : 'se' expressao 'entao' cmd* ( 'senao' cmd* )? 'fim_se';
+cmdSe : 'se' exprSe=expressao 'entao' cmd* ( 'senao' cmd* )? 'fim_se';
 
 cmdCaso : 'caso' exp_aritmetica 'seja' selecao ( 'senao' (cmd*) )? 'fim_caso';
 
