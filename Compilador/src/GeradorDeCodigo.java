@@ -108,7 +108,11 @@ public class GeradorDeCodigo extends LABaseListener {
 
         pilhaDeTabelas.topo().adicionarSimbolo(nome,tipo); // adiciono na tabela de simbolos
 
-        concatenaequebralinha(getTipoC(tipo) + " " + nome + ";"); // TODO: TRATAR O CASO DE LITERAL [100] e de lista de variaveis
+        concatena(getTipoC(tipo) + " " + nome);
+        if (tipo.equals("literal")){
+            concatena("[80]"); // NUMERO ARBITRARIO TODO: VER SE EM TODOS OS TESTES EH ASSIM
+        }
+        concatenaequebralinha(";"); // TODO: TRATAR O CASO DE lista de variaveis
     }
 
 
@@ -125,15 +129,18 @@ public class GeradorDeCodigo extends LABaseListener {
             String nome = context.cmdLeia().leiaIDENT.getText();
             String tipo = pilhaDeTabelas.topo().getTipo(nome);
 
-            // TODO: se for string, usa gets, fazer verificacao
+            if (tipo.equals("literal")){
+                concatenaequebralinha("gets(" + nome + ");");
+            }
+            else {
+                concatena("scanf(");
 
-            concatena("scanf(");
+                // pega a TAG correta
+                concatena("\"" + getTagC(tipo) + "\"");
 
-            // pega a TAG correta
-            concatena("\"" + getTagC(tipo) + "\"");
-
-            // Coloca o operador & e a variavel a ser lida
-            concatenaequebralinha(",&" + nome + ");");
+                // Coloca o operador & e a variavel a ser lida
+                concatenaequebralinha(",&" + nome + ");");
+            }
         }
         else if (token.equals("escreva")){
             concatena("printf(\"");
