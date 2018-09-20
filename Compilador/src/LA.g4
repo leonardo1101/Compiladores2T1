@@ -4,6 +4,7 @@ grammar LA;
 
 IDENT	:	('a'..'z' | 'A'..'Z' | '_') ('a'..'z' | 'A'..'Z' | '0'..'9' | '_')*;
 
+
 CADEIA	:	'"'  ~('\n' | '\r' | '\'')  * '\'' | '"' ~('\n' | '\r' | '"') * '"';
 
 NUM_INT: ('-')? '0'..'9' ('0'..'9')* ;
@@ -22,7 +23,6 @@ op_logico_2 : 'e';
 op_relacional : '=' | '<>' | '>=' | '<=' | '>' | '<';
 tipo_basico : 'literal' | 'inteiro' | 'real' | 'logico';
 
-
 programa : declaracoes 'algoritmo' corpo 'fim_algoritmo';
 
 declaracoes : decl_local_global*;
@@ -33,7 +33,8 @@ declaracao_local : 'declare' variavel # declaracao_local_variavel |
                     'constante' nome=IDENT ':' tipo_basico '=' valor_constante  # declaracao_local_constante|
                     'tipo' nome1=IDENT ':' tipo # declaracao_local_tipo;
 
-variavel : identificador_var (',' (identificador_var | IDENT) )* ':' tipo;
+variavel : nome5=identificador_var (',' (identificador_var | IDENT) )* ':' tipo;
+
 
 identificador_var : nome2=IDENT ('.' IDENT)* dimensao;
 
@@ -69,9 +70,9 @@ corpo : declaracao_local* cmd*;
 
 cmd : cmdLeia | cmdEscreva | cmdSe | cmdCaso | cmdPara | cmdEnquanto | cmdFaca | cmdAtribuicao | cmdChamada | cmdRetorne;
 
-cmdLeia : 'leia' '(' '^'? identificador (',' '^'? identificador)* ')';
+cmdLeia : 'leia' '(' '^'? leiaIDENT=identificador (',' '^'? identificador)* ')';
 
-cmdEscreva : 'escreva' '(' expressao ( ',' expressao)* ')';
+cmdEscreva : 'escreva' '(' escrevaExpr=expressao ( ',' expressao)* ')';
 
 
 cmdSe : 'se' expressao 'entao' cmd* ( 'senao' cmd* )? 'fim_se';
