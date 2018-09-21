@@ -1,7 +1,7 @@
 # Compiladores2-T1
 Primeiro trabalho e compiladores 2
 
-#Grupo
+# Grupo
 Leonardo Peralta - 726556
 Mariana Cavichioli - 726568
 Rafael Saito - 726580
