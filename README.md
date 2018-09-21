@@ -1,5 +1,5 @@
 # Compiladores2-T1
-Primeiro trabalho e compiladores 2
+Primeiro trabalho de Construção de Compiladores 2
 
 # Grupo
 * Leonardo Peralta - 726556
