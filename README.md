@@ -2,10 +2,10 @@
 Primeiro trabalho e compiladores 2
 
 # Grupo
-Leonardo Peralta - 726556
-Mariana Cavichioli - 726568
-Rafael Saito - 726580
-Renata Sarmet - 726586
+* Leonardo Peralta - 726556
+* Mariana Cavichioli - 726568
+* Rafael Saito - 726580
+* Renata Sarmet - 726586
 
 # Funcionamento de pastas
 * O sistema de pastas e nomes foram selecionados para serem utilizados no script, por isso não mude.
