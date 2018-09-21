@@ -158,6 +158,7 @@ public class GeradorDeCodigo extends LABaseListener {
                 complemento = context.cmdEscreva().complementoExpr(0).expressao().getText();
                 System.out.println("complemento: " + complemento);
                 tipo_complemento = pilhaDeTabelas.topo().getTipo(complemento);
+                System.out.println("tipo_complemento: " + tipo_complemento);
             }
 
 
@@ -175,15 +176,21 @@ public class GeradorDeCodigo extends LABaseListener {
             else{
                 if (nome.contains("\"")){
                     nome = nome.replace("\"", ""); // tira as aspas
+                    concatena(nome);
                     if(complemento.equals("")){
-                        concatena(nome + "\"");
+                        concatena("\");");
                     }
                     else {
-                        concatena(nome + getTagC(tipo_complemento) + "\"," + complemento);
+                        concatenaequebralinha(getTagC(tipo_complemento) + "\"," + complemento + ");");
                     }
-                    concatenaequebralinha(");");
                 }
             }
+
+
+            if(complemento.contains("\\n")){
+                concatenaequebralinha("printf(\"\\n\");");
+            }
+
             //TODO: fazer o ELSE = default dele
             //TODO: muuuitas verificacoes nao feitas
         }
@@ -205,12 +212,16 @@ public class GeradorDeCodigo extends LABaseListener {
             concatena(context.cmdPara().IDENT().getText() + "<=" + context.cmdPara().exp_aritmetica(1).getText() + ";");
             concatenaequebralinha(context.cmdPara().IDENT().getText() + "++){");
         }
+        else if(token.equals("enquanto")){
+            concatenaequebralinha("while (" + context.cmdEnquanto().expressao().getText() + ") {");
+        }
     }
 
     @Override
     public void exitCmd(LAParser.CmdContext context){
         String token = context.getStart().getText();
         if (token.equals("se")){
+            System.out.println("terminei aqui o se");
             concatenaequebralinha("}");
         }
         //TODO: colocar aqui o default
@@ -220,6 +231,9 @@ public class GeradorDeCodigo extends LABaseListener {
             }
         }
         else if(token.equals("para")){
+            concatenaequebralinha("}");
+        }
+        else if(token.equals("enquanto")){
             concatenaequebralinha("}");
         }
         if (switch_case){
@@ -255,6 +269,7 @@ public class GeradorDeCodigo extends LABaseListener {
             switch_case = false;
         }
         else{
+            System.out.println("nao e sw");
             concatenaequebralinha("}\nelse {");
         }
     }
@@ -267,9 +282,15 @@ public class GeradorDeCodigo extends LABaseListener {
         }
     }
 
+
     @Override
     public void enterDeclaracao_local_constante(LAParser.Declaracao_local_constanteContext context) {
         concatenaequebralinha("#define " + context.nome.getText() + " " + context.valor_constante().getText());
+    }
+
+    @Override
+    public void enterCmdAtribuicao(LAParser.CmdAtribuicaoContext context) {
+        concatenaequebralinha(context.identificador().getText() + " = " + context.expressao().getText() + ";");
     }
 
     public String getString(){
