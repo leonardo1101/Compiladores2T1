@@ -76,7 +76,7 @@ cmdEscreva : 'escreva' '(' escrevaExpr=expressao ( complementoExpr )* ')';
 
 complementoExpr: ',' expressao;
 
-cmdSe : 'se' exprSe=expressao 'entao' cmd* ( 'senao' cmd* )? 'fim_se';
+cmdSe : 'se' exprSe=expressao 'entao' cmd* ( senao_opcional )? 'fim_se';
 
 senao_opcional : 'senao' (cmd*);
 

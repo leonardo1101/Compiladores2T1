@@ -6,6 +6,8 @@ public class GeradorDeCodigo extends LABaseListener {
 
     private boolean switch_case = false; // comunicacao para avisar que está ocorrendo switch case
 
+    private boolean switch_default = false; // comunicacao para avisar que no swich case tem default
+
     private PilhaDeTabelas pilhaDeTabelas = new PilhaDeTabelas(); // Utilizada para verificacao de tipo em operacoes de leitura e escrita
     //private TabelaDeSimbolos tabelaDeSimbolos = new TabelaDeSimbolos("funcoes"); // Utilizada para verificacao de tipo de retorno de funcoes
 
@@ -192,6 +194,10 @@ public class GeradorDeCodigo extends LABaseListener {
         }
         else if (token.equals("caso")){
             concatenaequebralinha("switch(" + context.cmdCaso().exp_aritmetica().getText() + "){");
+
+            if (context.cmdCaso().senao_opcional().cmd() != null){ // importante para diferenciar do else do comando if
+                this.switch_default = true;
+            }
         }
         else if(token.equals("para")){
             concatena("for(" + context.cmdPara().IDENT().getText() + "=");
@@ -243,13 +249,27 @@ public class GeradorDeCodigo extends LABaseListener {
 
     @Override
     public void enterSenao_opcional(LAParser.Senao_opcionalContext context){
-        concatenaequebralinha("default:");
-        switch_case = false;
+        if (switch_default) {
+            System.out.println("entrei aqui no switch case");
+            concatenaequebralinha("default:");
+            switch_case = false;
+        }
+        else{
+            concatenaequebralinha("}\nelse {");
+        }
     }
 
     @Override
     public void exitSenao_opcional(LAParser.Senao_opcionalContext context){
-        concatenaequebralinha("}");
+        if (switch_default) {
+            System.out.println("final aqui no switch case");
+            concatenaequebralinha("}");
+        }
+    }
+
+    @Override
+    public void enterDeclaracao_local_constante(LAParser.Declaracao_local_constanteContext context) {
+        concatenaequebralinha("#define " + context.nome.getText() + " " + context.valor_constante().getText());
     }
 
     public String getString(){
