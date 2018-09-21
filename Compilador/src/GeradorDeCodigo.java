@@ -146,12 +146,17 @@ public class GeradorDeCodigo extends LABaseListener {
         }
         else if (token.equals("escreva")){
             String complemento = "";
+            String tipo_complemento = "";
             concatena("printf(\"");
             String nome = context.cmdEscreva().escrevaExpr.getText();
 
-//            if (!context.cmdEscreva().complementoExpr.isEmpty()){
-//                complemento = context.cmdEscreva().complementoExpr.getText();
-//            }
+            boolean mais = !context.cmdEscreva().complementoExpr().isEmpty();
+
+            if (mais){
+                complemento = context.cmdEscreva().complementoExpr(0).expressao().getText();
+                System.out.println("complemento: " + complemento);
+                tipo_complemento = pilhaDeTabelas.topo().getTipo(complemento);
+            }
 
 
             //TODO: Tratar varios casos, como vetor, funcao e registro
@@ -168,8 +173,12 @@ public class GeradorDeCodigo extends LABaseListener {
             else{
                 if (nome.contains("\"")){
                     nome = nome.replace("\"", ""); // tira as aspas
-                    concatena(nome + "\"");
-                    //concatena(nome + getTagC("inteiro") + "\"," + complemento);
+                    if(complemento.equals("")){
+                        concatena(nome + "\"");
+                    }
+                    else {
+                        concatena(nome + getTagC(tipo_complemento) + "\"," + complemento);
+                    }
                     concatenaequebralinha(");");
                 }
             }
