@@ -76,7 +76,7 @@ public class GeradorDeCodigo extends LABaseListener {
             expr =  expr.replace("ou", " || ");
         }
         if(expr.contains("nao")){
-            expr = expr.replace("nao", " ! ");
+            expr = expr.replace("nao", "!");
         }
         return expr;
     }
@@ -213,7 +213,12 @@ public class GeradorDeCodigo extends LABaseListener {
             concatenaequebralinha(context.cmdPara().IDENT().getText() + "++){");
         }
         else if(token.equals("enquanto")){
-            concatenaequebralinha("while (" + context.cmdEnquanto().expressao().getText() + ") {");
+            String expressao = converteOpLogico(context.cmdEnquanto().expressao().getText());
+            expressao = converteOpRelacional(expressao);
+            concatenaequebralinha("while (" + expressao + ") {");
+        }
+        else if(token.equals("faca")){
+            concatenaequebralinha("do {");
         }
     }
 
@@ -235,6 +240,11 @@ public class GeradorDeCodigo extends LABaseListener {
         }
         else if(token.equals("enquanto")){
             concatenaequebralinha("}");
+        }
+        else if(token.equals("faca")){
+            String expressao = converteOpLogico(context.cmdFaca().expressao().getText() );
+            expressao = converteOpRelacional(expressao);
+            concatenaequebralinha("} while (" + expressao + ");");
         }
         if (switch_case){
             concatenaequebralinha("break;");
