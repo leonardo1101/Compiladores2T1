@@ -108,8 +108,6 @@ public class Visitor extends LABaseVisitor {
 
         String tipoVar = pilhaDeTabelas.getTipoSimbolo(ctx.identificador().nome3.getText());
         String tipoAtrb = visitExpressao(ctx.expressao());
-        System.out.println("Variavel : " + ctx.identificador().nome3.getText());
-        System.out.println("Tipo atribuido: " + tipoAtrb);
         if(tipoVar == "real" && tipoAtrb=="inteiro")
             tipoAtrb="real";
        if(!tipoVar.equals(tipoAtrb) ){
@@ -272,8 +270,6 @@ public class Visitor extends LABaseVisitor {
     @Override public String visitParcela_unario_identificador(LAParser.Parcela_unario_identificadorContext ctx) {
         if(!pilhaTipo.isEmpty()) {
             List<String> l = pilhaTipo.pop();
-            System.out.println("Entrou aqui " + ctx.identificador().nome3.getText());
-            System.out.println("Tipo : " + pilhaDeTabelas.getTipoSimbolo(ctx.identificador().nome3.getText()));
             l.add(pilhaDeTabelas.getTipoSimbolo(ctx.identificador().nome3.getText()));
             pilhaTipo.add(l);
         }
@@ -311,7 +307,6 @@ public class Visitor extends LABaseVisitor {
             List<String> l = pilhaTipo.pop();
             l.add("inteiro");
 
-            System.out.println("Inttt");
             pilhaTipo.add(l);
         }
         super.visitParcela_unario_int(ctx);
@@ -322,7 +317,6 @@ public class Visitor extends LABaseVisitor {
     public String visitParcela_unario_real(LAParser.Parcela_unario_realContext ctx) {
 
         List<String> l = pilhaTipo.pop();
-        System.out.println("Ola o real :" + ctx.getText());
         l.add("real");
         pilhaTipo.add(l);
         super.visitParcela_unario_real(ctx);
@@ -339,7 +333,6 @@ public class Visitor extends LABaseVisitor {
             if(ctx.identificador() == null && ctx.CADEIA() != null) {
                 if(!pilhaTipo.isEmpty()) {
                     List<String> l = pilhaTipo.pop();
-                    System.out.println("Foiiiiiii " + ctx.oi.getLine());
                     l.add("literal");
                     pilhaTipo.add(l);
                 }
@@ -380,7 +373,6 @@ public class Visitor extends LABaseVisitor {
         String tipo = listaTipos.get(0);
 
         for(int i=1;i < listaTipos.size();i++){
-            System.out.println("0 "+ tipo + "\n"+ i +" "+ listaTipos.get(i));
             if(!tipo.equals(listaTipos.get(i)) && listaTipos.get(i) != null){
                 if(!((tipo.equals("inteiro") && listaTipos.get(i).equals("real")) || (tipo.equals("real") && listaTipos.get(i).equals("inteiro"))))
                     return "Tipo Incopativeis";
@@ -402,7 +394,6 @@ public class Visitor extends LABaseVisitor {
                 tipo_basico = ctx.tipo_basico().getText();
         if(ctx.nome4 != null)
             tipo_basico = ctx.nome4.getText();
-        System.out.println("Tipo: " + tipo_basico);
 
         if(tipo_basico != ""){
             if(tipo_basico.equals("real") || tipo_basico.equals("inteiro")  || tipo_basico.equals("literal")  || tipo_basico.equals("logico")  ){

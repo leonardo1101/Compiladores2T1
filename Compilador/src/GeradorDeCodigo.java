@@ -154,13 +154,9 @@ public class GeradorDeCodigo extends LABaseListener {
 //            }
 
 
-            //System.out.println("complemento: " + complemento);
             //TODO: Tratar varios casos, como vetor, funcao e registro
 
             String tipo = pilhaDeTabelas.topo().getTipo(nome);
-
-
-            System.out.println("TIPO: " + tipo);
 
             //TODO: ver se é funcao
 
