@@ -368,6 +368,7 @@ public class Visitor extends LABaseVisitor {
     public String visitExp_relacional(LAParser.Exp_relacionalContext ctx) {
         
         super.visitExp_relacional(ctx);
+        return "";
     }
 
     @Override
