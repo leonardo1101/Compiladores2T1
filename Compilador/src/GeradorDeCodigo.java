@@ -4,6 +4,8 @@ public class GeradorDeCodigo extends LABaseListener {
     private String saida; // Contem a saída em C
 
 
+    private boolean switch_case = false; // comunicacao para avisar que está ocorrendo switch case
+
     private PilhaDeTabelas pilhaDeTabelas = new PilhaDeTabelas(); // Utilizada para verificacao de tipo em operacoes de leitura e escrita
     //private TabelaDeSimbolos tabelaDeSimbolos = new TabelaDeSimbolos("funcoes"); // Utilizada para verificacao de tipo de retorno de funcoes
 
@@ -186,6 +188,12 @@ public class GeradorDeCodigo extends LABaseListener {
         else if (token.equals("caso")){
             concatenaequebralinha("switch(" + context.cmdCaso().exp_aritmetica().getText() + "){");
         }
+        else if(token.equals("para")){
+            concatena("for(" + context.cmdPara().IDENT().getText() + "=");
+            concatena(context.cmdPara().exp_aritmetica(0).getText() + ";");
+            concatena(context.cmdPara().IDENT().getText() + "<=" + context.cmdPara().exp_aritmetica(1).getText() + ";");
+            concatenaequebralinha(context.cmdPara().IDENT().getText() + "++){");
+        }
     }
 
     @Override
@@ -194,10 +202,19 @@ public class GeradorDeCodigo extends LABaseListener {
         if (token.equals("se")){
             concatenaequebralinha("}");
         }
-        //TODO: colocar aqui o default e o BREAK do case
-//        else if (token.equals("caso")){
-//
-//        }
+        //TODO: colocar aqui o default
+        else if (token.equals("caso")){
+            if(context.cmdCaso().senao_opcional() == null){
+                concatenaequebralinha("}");
+            }
+        }
+        else if(token.equals("para")){
+            concatenaequebralinha("}");
+        }
+        if (switch_case){
+            concatenaequebralinha("break;");
+            switch_case = false;
+        }
     }
 
     @Override
@@ -215,9 +232,20 @@ public class GeradorDeCodigo extends LABaseListener {
         else{
             concatenaequebralinha("case "+ selecao + ":");
         }
+        switch_case = true;
     }
 
 
+    @Override
+    public void enterSenao_opcional(LAParser.Senao_opcionalContext context){
+        concatenaequebralinha("default:");
+        switch_case = false;
+    }
+
+    @Override
+    public void exitSenao_opcional(LAParser.Senao_opcionalContext context){
+        concatenaequebralinha("}");
+    }
 
     public String getString(){
         return this.saida;

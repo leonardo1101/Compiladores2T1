@@ -77,7 +77,9 @@ cmdEscreva : 'escreva' '(' escrevaExpr=expressao ( ',' complementoExpr=expressao
 
 cmdSe : 'se' exprSe=expressao 'entao' cmd* ( 'senao' cmd* )? 'fim_se';
 
-cmdCaso : 'caso' exp_aritmetica 'seja' selecao ( 'senao' (cmd*) )? 'fim_caso';
+senao_opcional : 'senao' (cmd*);
+
+cmdCaso : 'caso' exp_aritmetica 'seja' selecao ( senao_opcional )? 'fim_caso';
 
 
 cmdPara : 'para' IDENT '<-' exp_aritmetica 'ate' exp_aritmetica 'faca' (cmd*) 'fim_para';
