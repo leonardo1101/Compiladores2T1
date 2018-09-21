@@ -1,3 +1,4 @@
 public enum Tipo {
-    VARIAVEL, FUNCAO
+        literal , inteiro , real , logico
+
 }

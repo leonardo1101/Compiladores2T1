@@ -1,4 +1,4 @@
-// Generated from /home/mariana/Documents/UFSCar/CC2/Compiladores2T1/Compilador/src/LA.g4 by ANTLR 4.7
+// Generated from /home/leonardo/Documents/Git-hub/Compiladores2T1/Compilador/src/LA.g4 by ANTLR 4.7
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.Token;

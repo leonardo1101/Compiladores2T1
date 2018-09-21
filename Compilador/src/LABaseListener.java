@@ -1,4 +1,4 @@
-// Generated from /home/mariana/Documents/UFSCar/CC2/Compiladores2T1/Compilador/src/LA.g4 by ANTLR 4.7
+// Generated from /home/leonardo/Documents/Git-hub/Compiladores2T1/Compilador/src/LA.g4 by ANTLR 4.7
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
@@ -622,6 +622,18 @@ public class LABaseListener implements LAListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitParcela(LAParser.ParcelaContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterParcela_unario(LAParser.Parcela_unarioContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitParcela_unario(LAParser.Parcela_unarioContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

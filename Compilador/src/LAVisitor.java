@@ -1,4 +1,4 @@
-// Generated from /home/mariana/Documents/UFSCar/CC2/Compiladores2T1/Compilador/src/LA.g4 by ANTLR 4.7
+// Generated from /home/leonardo/Documents/Git-hub/Compiladores2T1/Compilador/src/LA.g4 by ANTLR 4.7
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
 /**
@@ -326,36 +326,37 @@ public interface LAVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitParcela(LAParser.ParcelaContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code parcela_unario_identificador}
-	 * labeled alternative in {@link LAParser#parcela_unario}.
+	 * Visit a parse tree produced by {@link LAParser#parcela_unario}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitParcela_unario(LAParser.Parcela_unarioContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link LAParser#parcela_unario_identificador}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitParcela_unario_identificador(LAParser.Parcela_unario_identificadorContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code parcela_unario_ident}
-	 * labeled alternative in {@link LAParser#parcela_unario}.
+	 * Visit a parse tree produced by {@link LAParser#parcela_unario_ident}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitParcela_unario_ident(LAParser.Parcela_unario_identContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code parcela_unario_int}
-	 * labeled alternative in {@link LAParser#parcela_unario}.
+	 * Visit a parse tree produced by {@link LAParser#parcela_unario_int}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitParcela_unario_int(LAParser.Parcela_unario_intContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code parcela_unario_real}
-	 * labeled alternative in {@link LAParser#parcela_unario}.
+	 * Visit a parse tree produced by {@link LAParser#parcela_unario_real}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitParcela_unario_real(LAParser.Parcela_unario_realContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code parcela_unario_exp}
-	 * labeled alternative in {@link LAParser#parcela_unario}.
+	 * Visit a parse tree produced by {@link LAParser#parcela_unario_exp}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
