@@ -33,7 +33,7 @@ declaracao_local : 'declare' variavel # declaracao_local_variavel |
                     'constante' nome=IDENT ':' tipo_basico '=' valor_constante  # declaracao_local_constante|
                     'tipo' nome1=IDENT ':' tipo # declaracao_local_tipo;
 
-variavel : nome5=identificador_var (',' (identificador_var | IDENT) )* ':' tipo;
+variavel : nome5=identificador_var (',' (lista_mais_var+=identificador_var | IDENT) )* ':' tipo;
 
 
 identificador_var : nome2=IDENT ('.' IDENT)* dimensao;

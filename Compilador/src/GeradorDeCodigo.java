@@ -110,15 +110,31 @@ public class GeradorDeCodigo extends LABaseListener {
         String nome = context.nome5.getText();
         String tipo = context.tipo().getText();
 
-        pilhaDeTabelas.topo().adicionarSimbolo(nome,tipo); // adiciono na tabela de simbolos
+        if (context.tipo().registro() == null) {
+            pilhaDeTabelas.topo().adicionarSimbolo(nome, tipo); // adiciono na tabela de simbolos
 
-        concatena(getTipoC(tipo) + " " + nome);
-        if (tipo.equals("literal")){
-            concatena("[80]"); // NUMERO ARBITRARIO TODO: VER SE EM TODOS OS TESTES EH ASSIM
+            concatena(getTipoC(tipo) + " " + nome);
+            if (tipo.equals("literal")) {
+                concatena("[80]"); // NUMERO ARBITRARIO TODO: VER SE EM TODOS OS TESTES EH ASSIM
+            }
+            //concatenaequebralinha(";"); // TODO: TRATAR O CASO DE lista de variaveis
         }
-        concatenaequebralinha(";"); // TODO: TRATAR O CASO DE lista de variaveis
+        else {
+            pilhaDeTabelas.topo().adicionarSimbolo(nome, "registro");
+        }
+
+        for(LAParser.Identificador_varContext mais_var : context.lista_mais_var){
+            pilhaDeTabelas.topo().adicionarSimbolo(mais_var.getText(),context.tipo().getText());
+        }
     }
 
+    @Override
+    public void exitVariavel(LAParser.VariavelContext context) {
+        for (LAParser.Identificador_varContext mais_var : context.lista_mais_var) {
+            concatena("," + mais_var.getText());
+        }
+        concatenaequebralinha(";");
+    }
 
     // Converte comandos como leia e escreva
     @Override
@@ -162,6 +178,7 @@ public class GeradorDeCodigo extends LABaseListener {
             }
 
 
+
             //TODO: Tratar varios casos, como vetor, funcao e registro
 
             String tipo = pilhaDeTabelas.topo().getTipo(nome);
@@ -184,6 +201,9 @@ public class GeradorDeCodigo extends LABaseListener {
                         concatenaequebralinha(getTagC(tipo_complemento) + "\"," + complemento + ");");
                     }
                 }
+//                else if(nome.contains("+") || nome.contains("-")){
+//                   //TODO:tratar aqui o caso de expressao - algoritmo 5
+//                }
             }
 
 
