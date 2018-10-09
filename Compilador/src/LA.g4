@@ -60,7 +60,7 @@ declaracao_global : 'procedimento' IDENT '(' parametros? ')'  declaracao_local* 
                 | 'funcao' IDENT '(' parametros?  ')' ':' tipo_estendido declaracao_local* cmd* 'fim_funcao' # declaracao_global_funcao;
 
 
-parametro : 'var'? identificador (',' identificador)* ':' tipo_estendido;
+parametro : 'var'? nome6=identificador (',' identificador)* ':' tipo_estendido;
 
 
 parametros : parametro (',' parametro)*;
