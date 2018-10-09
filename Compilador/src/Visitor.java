@@ -1,4 +1,5 @@
 import org.antlr.v4.runtime.CommonTokenStream;
+import sun.jvm.hotspot.runtime.linux_amd64.LinuxAMD64JavaThreadPDAccess;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -11,6 +12,8 @@ public class Visitor extends LABaseVisitor {
     CommonTokenStream cts;
     List<Parametros> listaP = new ArrayList<>();
     LinkedList<List<String>> pilhaTipo = new LinkedList<>() ;
+    Registro registro = new Registro("");
+
 
     public void setTokenStream(CommonTokenStream c){
         cts = c;
@@ -26,6 +29,13 @@ public class Visitor extends LABaseVisitor {
         pilhaDeTabelas.desempilhar();
 
         return null;
+    }
+    @Override public String visitCmdRetorne(LAParser.CmdRetorneContext ctx) {
+        if(pilhaDeTabelas.topo()!= null)
+            if(pilhaDeTabelas.topo().getEscopo().equals("global") || pilhaDeTabelas.topo().getTipoEscopo().equals("procedimento"))
+              Saida.println("Linha "+ctx.getStart().getLine()+": comando retorne nao permitido nesse escopo");
+        super.visitCmdRetorne(ctx);
+        return "";
     }
 
 
@@ -45,18 +55,23 @@ public class Visitor extends LABaseVisitor {
 
         return null;
     }
-
     @Override
-    public Object visitDeclaracao_local_tipo(LAParser.Declaracao_local_tipoContext ctx) {
-        TabelaDeSimbolos escopoAtual = pilhaDeTabelas.topo();
-        String tipo = (String) super.visitTipo(ctx.tipo());
+    public String visitRegistro(LAParser.RegistroContext ctx) {
+        if (registro == null)
+            registro.setNome("$basico");
 
-        if(!escopoAtual.existeSimbolo(ctx.nome1.getText())) {
-               escopoAtual.adicionarSimbolo(ctx.nome1.getText(), tipo);
-        } else{
-            Saida.println("Linha "+ctx.nome1.getLine()+": identificador " +ctx.nome1.getText()+ " ja declarado anteriormente");
+        for(LAParser.VariavelContext var : ctx.variavel()){
+            for(LAParser.Identificador_varContext i : var.identificador_var())
+                registro.adicionarSimbolo(i.getText(),var.tipo().getText());
 
         }
+        super.visitRegistro(ctx);
+        return "";
+    }
+
+        @Override
+    public Object visitDeclaracao_local_tipo(LAParser.Declaracao_local_tipoContext ctx) {
+        registro.setNome(ctx.nome1.getText());
 
         super.visitDeclaracao_local_tipo(ctx); // talvez precise deixar isso aqui pra ele visitar os filhos, precisa confirmar
 
@@ -66,11 +81,12 @@ public class Visitor extends LABaseVisitor {
     @Override
     public Object visitDeclaracao_global_procedimento(LAParser.Declaracao_global_procedimentoContext ctx) {
         pilhaDeTabelas.empilhar(new TabelaDeSimbolos(ctx.IDENT().getText()));
-
+        pilhaDeTabelas.topo().setTipoEscopo("procedimento");
         Parametros p =new Parametros(ctx.IDENT().getText());
         ArrayList<String> parametros = new ArrayList<>();
         for ( LAParser.ParametroContext pc :   ctx.parametros().parametro()){
             parametros.add(pc.tipo_estendido().getText());
+            pilhaDeTabelas.topo().adicionarSimbolo(pc.identificador(0).getText(),pc.tipo_estendido().getText());
 
         }
         p.setLista(parametros);
@@ -86,14 +102,16 @@ public class Visitor extends LABaseVisitor {
     @Override
     public Object visitDeclaracao_global_funcao(LAParser.Declaracao_global_funcaoContext ctx) {
         pilhaDeTabelas.empilhar(new TabelaDeSimbolos(ctx.IDENT().getText()));
-
+        pilhaDeTabelas.topo().setTipoEscopo("funcao");
         Parametros p =new Parametros(ctx.IDENT().getText());
         ArrayList<String> parametros = new ArrayList<>();
         for ( LAParser.ParametroContext pc :   ctx.parametros().parametro()){
             parametros.add(pc.tipo_estendido().getText());
+            pilhaDeTabelas.topo().adicionarSimbolo(pc.identificador(0).getText(),pc.tipo_estendido().getText());
 
         }
         p.setLista(parametros);
+        p.setRetorno(ctx.tipo_estendido().getText());
         listaP.add(p);
 
         super.visitDeclaracao_global_funcao(ctx);
@@ -105,14 +123,40 @@ public class Visitor extends LABaseVisitor {
 
     @Override
     public Object visitCmdAtribuicao(LAParser.CmdAtribuicaoContext ctx)  {
+        String var = "";
 
-        String tipoVar = pilhaDeTabelas.getTipoSimbolo(ctx.identificador().nome3.getText());
-        String tipoAtrb = visitExpressao(ctx.expressao());
-        if(tipoVar == "real" && tipoAtrb=="inteiro")
-            tipoAtrb="real";
-       if(!tipoVar.equals(tipoAtrb) ){
-           Saida.println("Linha " + ctx.identificador().nome3.getLine() + ": atribuicao nao compativel para " + ctx.identificador().nome3.getText() );
-       }
+        if(pilhaDeTabelas.existeSimbolo(ctx.identificador().nome3.getText())) {
+            if(ctx.ponteiro != null)
+                var = "^";
+            var +=ctx.identificador().getText();
+            String tipoVar = pilhaDeTabelas.getTipoSimbolo(ctx.identificador().nome3.getText());
+            if (tipoVar != null) {
+                if (tipoVar.equals(registro.getNome())) {
+                    if (ctx.identificador().tipoRegistro != null) {
+                        String ident_var = ctx.identificador().tipoRegistro.getText();
+                        tipoVar = registro.getTipo(ident_var);
+                    }
+                }
+                String tipoAtrb = verificaTipo(ctx.expressao());
+
+                if (tipoVar.charAt(0) == '^') {
+                    if (var.charAt(0) == '^') {
+                        tipoVar = var.substring(1);
+                    } else {
+                        tipoVar = "endereco";
+                    }
+                }
+
+                if (tipoVar.equals("real") && tipoAtrb.equals("inteiro"))
+                    tipoAtrb = "real";
+                if (!tipoVar.equals(tipoAtrb)) {
+                    Saida.println("Linha " + ctx.identificador().nome3.getLine() + ": atribuicao nao compativel para " + var);
+                }
+            }
+        }else {
+
+            Saida.println("Linha " + ctx.getStart().getLine() + ": identificador " + ctx.identificador().getText() + " nao declarado");
+        }
 
 
         return null;
@@ -120,11 +164,28 @@ public class Visitor extends LABaseVisitor {
     @Override
     public Object visitVariavel(LAParser.VariavelContext ctx){
         TabelaDeSimbolos escopoAtual = pilhaDeTabelas.topo();
-        String tipo = ctx.tipo().getText();
 
+        String tipo = ctx.tipo().getText();
+        if(ctx.tipo().registro() != null)
+            tipo="$basico";
         for(LAParser.Identificador_varContext ctx_identificador: ctx.identificador_var()) {
             String nomeVar = (String) visitIdentificador_var(ctx_identificador);
-            if (!escopoAtual.existeSimbolo(nomeVar) ){
+            int i = 0;
+            boolean encontrou = false;
+            Parametros p;
+            if(!listaP.isEmpty()) {
+                p = listaP.get(0);
+                while (i < listaP.size() && !encontrou) {
+                    p = listaP.get(i);
+                    if (p.getIdentificador().equals(nomeVar)) {
+                        encontrou = true;
+                    }
+                    i++;
+                }
+            }
+
+
+            if (!escopoAtual.existeSimbolo(nomeVar) && !nomeVar.equals(registro.getNome()) && !encontrou ){
                 escopoAtual.adicionarSimbolo(nomeVar, tipo);
             } else {
                 Saida.println("Linha " + ctx_identificador.nome2.getLine() + ": identificador " + nomeVar + " ja declarado anteriormente");
@@ -137,19 +198,25 @@ public class Visitor extends LABaseVisitor {
 
     @Override
     public String visitIdentificador_var(LAParser.Identificador_varContext ctx) {
-        return ctx.getText();
+        return ctx.nome2.getText();
     }
 
     @Override
     public String visitIdentificador(LAParser.IdentificadorContext ctx) {
         if(!pilhaDeTabelas.existeSimbolo(ctx.nome3.getText())) {
-            Saida.println("Linha "+ctx.nome3.getLine()+": identificador " + ctx.nome3.getText() + " nao declarado");
+            Saida.println("Linha " + ctx.nome3.getLine() + ": identificador " + ctx.getText() + " nao declarado");
+
         }else{
-            String tipo = pilhaDeTabelas.getTipoSimbolo(ctx.nome3.getText());
-            if(!pilhaTipo.isEmpty()) {
-                List<String> l = pilhaTipo.pop();
-                l.add(tipo);
-                pilhaTipo.add(l);
+            if (pilhaDeTabelas.getTipoSimbolo(ctx.nome3.getText()).equals(registro.getNome()) ){
+                boolean achou = false;
+                if(ctx.tipoRegistro != null) {
+                    achou = registro.existeSimbolo(ctx.tipoRegistro.getText());
+
+
+                    if (!achou) {
+                        Saida.println("Linha " + ctx.nome3.getLine() + ": identificador " + ctx.getText() + " nao declarado");
+                    }
+                }
             }
 
 
@@ -162,229 +229,51 @@ public class Visitor extends LABaseVisitor {
 
 
 
-//    @Override
-//    public String visitExp_aritmetica(LAParser.Exp_aritmeticaContext ctx) {
-//        String tipoT = null;
-//        List<LAParser.TermoContext> lista = new ArrayList<>();
-//        if(ctx != null){
-//            lista = ctx.outrosTermos;
-//            lista.add(ctx.termo1);
-//            for (LAParser.TermoContext termoContext : lista) {
-//                if (super.visitTermo(termoContext) != null)
-//                    tipoT = (String) super.visitTermo(termoContext);
-//            }
-//            for (LAParser.TermoContext termoContext : lista) {
-//                String t = (String) visitTermo(termoContext);
-//
-//                if (t != null && tipoT != null) {
-//                    if (!tipoT.equals(t)) {
-//
-//                        return "TD";
-//                    }
-//                }
-//            }
-//        }
-//        return tipoT;
-//    }
-
-//    @Override
-//    public String visitTermo(LAParser.TermoContext ctx) {
-//        String tipoT = null;
-//        List<LAParser.FatorContext> lista = ctx.outrosFatores;
-//        lista.add(ctx.fator1);
-//        for(LAParser.FatorContext fator : lista){
-//
-//            if(super.visitFator(fator) != null)
-//                tipoT  = (String) super.visitFator(fator);
-//        }
-//        for(LAParser.FatorContext fator : lista){
-//            String t = (String) super.visitFator(fator);
-//
-//            System.out.println("Antes: " + tipoT + " Depois: " + t);
-//            if(t!= null) {
-//                if (!tipoT.equals(t)) {
-//                    return "TD";
-//                }
-//            }
-//        }
-//        return tipoT;
-//
-//    }
-
-//
-//    @Override
-//    public String visitFator(LAParser.FatorContext ctx) {
-//        String tipoT = null;
-//        List<LAParser.ParcelaContext> lista = ctx.outrasParcelas;
-//        lista.add(ctx.parcela1);
-//        for(LAParser.ParcelaContext parcela : lista){
-//            if(super.visitParcela(parcela) != null)
-//                tipoT  = (String) super.visitParcela(parcela);
-//        }
-//        for(LAParser.ParcelaContext parcela : lista){
-//            String t = (String) super.visitParcela(parcela);
-//
-//            if(t!= null) {
-//                if (!tipoT.equals(t)) {
-//                    return "TD";
-//                }
-//            }
-//        }
-//        return tipoT;
-//    }
-//    @Override
-//    public String visitFator_logico(LAParser.Fator_logicoContext ctx) {
-//        return (String) super.visitParcela_logica(ctx.parcela_logica());
-//    }
-
-//        if(visitParcela_unario_ident(ctx.parcela_unario_ident()) != null)
-//            return (String) visitParcela_unario_ident(ctx.parcela_unario_ident());
-//
-//        if(visitParcela_unario_int(ctx.parcela_unario_int())!= null)
-//            return (String) visitParcela_unario_int(ctx.parcela_unario_int());
-//
-//        if(visitParcela_unario_real(ctx.parcela_unario_real())!= null)
-//            return (String) visitParcela_unario_real(ctx.parcela_unario_real());
-//
-//        if(visitParcela_unario_exp(ctx.parcela_unario_exp()) != null)
-//            return (String) visitParcela_unario_exp(ctx.parcela_unario_exp()) ;
-//
-//        if(visitParcela_unario_identificador(ctx.parcela_unario_identificador())!= null)
-//            return (String) visitParcela_unario_identificador(ctx.parcela_unario_identificador());
-//        return null;
-//
-//    }
-
-
-
-//    @Override public String visitParcela(LAParser.ParcelaContext ctx) {
-//        if(visitParcela_nao_unario(ctx.parcela_nao_unario()) != null)
-//            return (String) visitParcela_nao_unario(ctx.parcela_nao_unario());
-//
-//        if(visitParcela_unario(ctx.parcela_unario())!= null)
-//            return (String) visitParcela_unario(ctx.parcela_unario());
-//
-//        return null;
-//    }
-
-    @Override public String visitParcela_unario_identificador(LAParser.Parcela_unario_identificadorContext ctx) {
-        if(!pilhaTipo.isEmpty()) {
-            List<String> l = pilhaTipo.pop();
-            l.add(pilhaDeTabelas.getTipoSimbolo(ctx.identificador().nome3.getText()));
-            pilhaTipo.add(l);
-        }
-        super.visitParcela_unario_identificador(ctx);
-        return "";
-    }
-//    @Override public String visitParcela_unario_exp(LAParser.Parcela_unario_expContext ctx) {
-//        return (String) super.visitExpressao(ctx.expressao());
-//    }
-
-
-
     @Override
     public String visitParcela_unario_ident(LAParser.Parcela_unario_identContext ctx) {
         String tipo = null;
         if(ctx != null) {
-            if (pilhaDeTabelas.existeSimbolo(ctx.IDENT().getText())) {
-                tipo = pilhaDeTabelas.getTipoSimbolo(ctx.IDENT().getText());
-                List<String> l = pilhaTipo.pop();
-                l.add(tipo);
-                pilhaTipo.add(l);
+            if(ctx.expressao() == null) {
+                if (!pilhaDeTabelas.existeSimbolo(ctx.IDENT().getText())) {
+                    Saida.println("Linha " + ctx.getStart().getLine() + ": identificador " + ctx.IDENT().getText() + " nao declarado");
+                }
+            }else {
+                int i = 0;
+                boolean encontrou = false;
+                Parametros p;
+                p = listaP.get(0);
+                while (i < listaP.size() && !encontrou) {
+                    p = listaP.get(i);
+                    if (p.getIdentificador().equals(ctx.IDENT().getText())) {
+                        encontrou = true;
+                    }
+                    i++;
+                }
 
-            } else {
-                Saida.println("Linha " + ctx.getStart().getLine() + ": identificador " + ctx.IDENT().getText() + " nao declarado");
+                if (!encontrou) {
+                    Saida.println("Erro semantico: " + ctx.IDENT().getText() + "Funçao inexistente");
+                } else {
+                    int total = 0;
+
+                    for (i = 0; i < p.getLista().size() && ctx.expressao(i) != null; i++) {
+
+                        if (p.getLista().get(i).equals(verificaTipo(ctx.expressao(i)))) {
+                            total++;
+                        }
+                    }
+                    if (total != p.getLista().size()) {
+                        Saida.println("Linha " + ctx.getStart().getLine() + ": incompatibilidade de parametros na chamada de " + ctx.IDENT().getText());
+                    }
+
+                }
             }
         }
         super.visitParcela_unario_ident(ctx);
         return "";
     }
 
-    @Override
-    public String visitParcela_unario_int(LAParser.Parcela_unario_intContext ctx) {
 
-        if(!pilhaTipo.isEmpty()) {
-            List<String> l = pilhaTipo.pop();
-            l.add("inteiro");
-
-            pilhaTipo.add(l);
-        }
-        super.visitParcela_unario_int(ctx);
-        return "";
-    }
-
-    @Override
-    public String visitParcela_unario_real(LAParser.Parcela_unario_realContext ctx) {
-
-        List<String> l = pilhaTipo.pop();
-        l.add("real");
-        pilhaTipo.add(l);
-        super.visitParcela_unario_real(ctx);
-        return "";
-
-    }
-
-    @Override
-    public String visitParcela_nao_unario(LAParser.Parcela_nao_unarioContext ctx) {
-
-        if(ctx == null){
-            return null;
-        }else {
-            if(ctx.identificador() == null && ctx.CADEIA() != null) {
-                if(!pilhaTipo.isEmpty()) {
-                    List<String> l = pilhaTipo.pop();
-                    l.add("literal");
-                    pilhaTipo.add(l);
-                }
-            }else{
-                if(!pilhaTipo.isEmpty()) {
-                    List<String> l = pilhaTipo.pop();
-                    l.add(pilhaDeTabelas.getTipoSimbolo(ctx.identificador().nome3.getText()));
-                    pilhaTipo.add(l);
-                }
-            }
-        }
-        super.visitParcela_nao_unario(ctx);
-        return "";
-    }
-
-    @Override public String visitParcela_logica(LAParser.Parcela_logicaContext ctx) {
-        if(!pilhaTipo.isEmpty() && ctx.exp_relacional() == null) {
-            List<String> l = pilhaTipo.pop();
-            l.add("logico");
-            pilhaTipo.add(l);
-        }
-        super.visitParcela_logica(ctx);
-        return "";
-    }
-    @Override
-    public String visitExp_relacional(LAParser.Exp_relacionalContext ctx) {
-        
-        super.visitExp_relacional(ctx);
-        return "";
-    }
-
-    @Override
-    public String visitExpressao(LAParser.ExpressaoContext ctx) {
-        List<String> listaTipos =  new ArrayList<>();
-        pilhaTipo.push(listaTipos);
-        super.visitExpressao(ctx);
-        listaTipos = pilhaTipo.pop();
-        String tipo = listaTipos.get(0);
-
-        for(int i=1;i < listaTipos.size();i++){
-            if(!tipo.equals(listaTipos.get(i)) && listaTipos.get(i) != null){
-                if(!((tipo.equals("inteiro") && listaTipos.get(i).equals("real")) || (tipo.equals("real") && listaTipos.get(i).equals("inteiro"))))
-                    return "Tipo Incopativeis";
-            }
-        }
-        return tipo;
-
-
-    }
-
-
-//NECESSARIO VERIFICAR SE O TIPO EXISTE?
+    //NECESSARIO VERIFICAR SE O TIPO EXISTE?
 
     @Override
     public String visitTipo_basico_ident(LAParser.Tipo_basico_identContext ctx) {
@@ -396,7 +285,7 @@ public class Visitor extends LABaseVisitor {
             tipo_basico = ctx.nome4.getText();
 
         if(tipo_basico != ""){
-            if(tipo_basico.equals("real") || tipo_basico.equals("inteiro")  || tipo_basico.equals("literal")  || tipo_basico.equals("logico")  ){
+            if(tipo_basico.equals("real") || tipo_basico.equals("inteiro")  || tipo_basico.equals("literal")  || tipo_basico.equals("logico") || tipo_basico.equals(registro.getNome()) ){
                 return tipo_basico;
             } else{
                 Saida.println("Linha "+ctx.nome4.getLine()+": tipo " + ctx.nome4.getText() + " nao declarado");
@@ -409,20 +298,7 @@ public class Visitor extends LABaseVisitor {
     }
 
 
-    @Override
-    public Object visitValor_constante_cadeia(LAParser.Valor_constante_cadeiaContext ctx) {
-        return ctx.CADEIA().getText();
-    }
 
-    @Override
-    public Object visitValor_constante_int(LAParser.Valor_constante_intContext ctx) {
-        return ctx.NUM_INT().getText();
-    }
-
-    @Override
-    public Object visitValor_constante_real(LAParser.Valor_constante_realContext ctx) {
-        return ctx.NUM_REAL().getText();
-    }
 
     @Override
     public Object visitCmdSe(LAParser.CmdSeContext ctx) {
@@ -482,30 +358,201 @@ public class Visitor extends LABaseVisitor {
         return null;
     }
 
+
     @Override
     public Object visitCmdChamada(LAParser.CmdChamadaContext ctx) {
         int i = 0;
         boolean encontrou = false;
-        Parametros p = new Parametros("a");
-        while (i < listaP.size() && ! encontrou){
+        Parametros p;
+        p = listaP.get(0);
+        while (i < listaP.size() && !encontrou) {
             p = listaP.get(i);
-            if(p.getIdentificador().equals(ctx.IDENT().getText())){
+            if (p.getIdentificador().equals(ctx.IDENT().getText())) {
                 encontrou = true;
             }
+            i++;
         }
-        if(!encontrou){
+
+        if (!encontrou) {
             Saida.println("Erro semantico: " + ctx.IDENT().getText() + "Funçao inexistente");
-        }else{
-            for(i=0;i<p.getLista().size();i++){
-                if(p.getLista().get(i).equals(ctx.expressao(i)));
+        } else {
+            int total = 0;
+
+            for (i = 0; i < p.getLista().size() && ctx.expressao(i) != null; i++) {
+
+                if (p.getLista().get(i).equals(verificaTipo(ctx.expressao(i)))) {
+                    total++;
+                }
+            }
+            if (total != p.getLista().size()) {
+                Saida.println("Linha " + ctx.getStart().getLine() + ": incompatibilidade de parametros na chamada de " + ctx.IDENT().getText());
             }
 
         }
-
+        super.visitCmdChamada(ctx);
 
         return null;
     }
 
 
 
+    private String verificaTipo(LAParser.ExpressaoContext exp) {
+        String tp = "erro";
+        if(exp.termo_logico() != null){
+            tp = verificaTipo(exp.termo_logico(0));
+
+            for(LAParser.Termo_logicoContext termoLogico: exp.termo_logico()) {
+                if(!verificaTipo(termoLogico).equals(tp) &&
+                    !((verificaTipo(termoLogico).equals("inteiro") && tp.equals("real")) || (tp.equals("real") && verificaTipo(termoLogico).equals("inteiro")))) {
+                    tp = "erro";
+                }
+
+            }
+        }
+
+        return tp;
+    }
+
+    private String verificaTipo(LAParser.Termo_logicoContext termo) {
+        String tp = "erro";
+        if(termo.fator_logico() != null) {
+            tp = verificaTipo(termo.fator_logico(0));
+
+
+            for (LAParser.Fator_logicoContext fator_logico : termo.fator_logico()) {
+                if (!verificaTipo(fator_logico).equals(tp) &&
+                        !((verificaTipo(fator_logico).equals("inteiro") && tp.equals("real")) || (tp.equals("real") && verificaTipo(fator_logico).equals("inteiro")))) {
+                    tp = "erro";
+                }
+            }
+        }
+        return tp;
+    }
+
+    private String verificaTipo(LAParser.Fator_logicoContext fator_logico) {
+        String tp = "erro";
+        if(fator_logico.parcela_logica()!= null)
+            tp = verificaTipo(fator_logico.parcela_logica());
+        return tp;
+    }
+    private String verificaTipo(LAParser.Parcela_logicaContext parcela_logica) {
+
+        if(parcela_logica.valores_logicos != null)
+            return "logico";
+        else {
+            String tp = "erro";
+            if(parcela_logica.exp_relacional()!= null)
+                tp = verificaTipo(parcela_logica.exp_relacional());
+            return tp;
+        }
+    }
+    private String verificaTipo(LAParser.Exp_relacionalContext exp_relacional){
+        String tp = "erro";
+        if(exp_relacional.exp1 != null)
+            tp = verificaTipo(exp_relacional.exp1);
+
+        if(exp_relacional.op_relacional() != null){
+            return "logico";
+        }else{
+            return tp;
+        }
+
+    }
+    private String verificaTipo(LAParser.Exp_aritmeticaContext exp_arit){
+        String tp = "erro";
+        if(exp_arit.termo1 != null) {
+                tp = verificaTipo(exp_arit.termo1);
+            for (LAParser.TermoContext termo : exp_arit.termo()) {
+                if(termo != null && tp != null) {
+                    if (!verificaTipo(termo).equals(tp) &&
+                            !((verificaTipo(termo).equals("inteiro") && tp.equals("real")) || (tp.equals("real") && verificaTipo(termo).equals("inteiro")))) {
+                        tp = "erro";
+                    }
+                }
+
+            }
+        }
+        return tp;
+    }
+    private String verificaTipo(LAParser.TermoContext termo){
+        String tp = "erro";
+        if(termo.fator1 != null) {
+            tp = verificaTipo(termo.fator1);
+            for (LAParser.FatorContext fator : termo.fator()) {
+                if (tp != null && fator != null) {
+                    if (!verificaTipo(fator).equals(tp) &&
+                            !((verificaTipo(fator).equals("inteiro") && tp.equals("real")) || (tp.equals("real") && verificaTipo(fator).equals("inteiro")))) {
+                        tp = "erro";
+                    }
+                }
+            }
+        }
+        return tp;
+    }
+    private String verificaTipo(LAParser.FatorContext fator){
+        String tp = "erro";
+        if(fator.parcela1 != null) {
+            tp = verificaTipo(fator.parcela1);
+            for (LAParser.ParcelaContext parcela : fator.parcela()) {
+                if (tp != null && parcela != null) {
+                    if (!verificaTipo(parcela).equals(tp) &&
+                            !((verificaTipo(parcela).equals("inteiro") && tp.equals("real")) || (tp.equals("real") && verificaTipo(parcela).equals("inteiro")))) {
+                        tp = "erro";
+                    }
+                }
+            }
+        }
+        return tp;
+    }
+    private String verificaTipo(LAParser.ParcelaContext parcela){
+
+        if(parcela.parcela_unario() != null) {
+            if (parcela.parcela_unario().parcela_unario_exp() != null) {
+                LAParser.ExpressaoContext exp = parcela.parcela_unario().parcela_unario_exp().expressao();
+                return verificaTipo(exp);
+            }
+            if (parcela.parcela_unario().parcela_unario_int() != null)
+                return "inteiro";
+            if (parcela.parcela_unario().parcela_unario_real() != null)
+                return "real";
+            if (parcela.parcela_unario().parcela_unario_identificador() != null) {
+                String identificador = parcela.parcela_unario().parcela_unario_identificador().identificador().nome3.getText();
+                String tipo =  pilhaDeTabelas.getTipoSimbolo(identificador);
+                if(tipo.equals(registro.getNome())){
+                    if( parcela.parcela_unario().parcela_unario_identificador().identificador().tipoRegistro != null) {
+                        String o = parcela.parcela_unario().parcela_unario_identificador().identificador().tipoRegistro.getText();
+                        tipo = registro.getTipo(o);
+                    }
+                }
+                return tipo;
+            }
+            if (parcela.parcela_unario().parcela_unario_ident() != null) {
+                String tp = "erro";
+                int i = 0;
+                boolean encontrou = false;
+                Parametros p;
+                p = listaP.get(0);
+                while (i < listaP.size() && !encontrou) {
+                    p = listaP.get(i);
+                    if (p.getIdentificador().equals(parcela.parcela_unario().parcela_unario_ident().IDENT().getText())) {
+                        encontrou = true;
+                    }
+                    i++;
+                }
+                if(encontrou)
+                    tp = p.getRetorno();
+                return tp;
+            }
+
+        }else{
+            if(parcela.parcela_nao_unario().oi != null)
+                return "literal";
+            return "endereco";
+        }
+        return "";
+    }
+
+
+
 }
+

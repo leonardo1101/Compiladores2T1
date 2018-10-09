@@ -1,9 +1,11 @@
 import java.util.ArrayList;
+import java.util.SimpleTimeZone;
 
 public class Parametros {
 
     private ArrayList<String> Lista;
     private String identificador;
+    private String retorno;
 
     public Parametros(String identificador){
         this.identificador = identificador;
@@ -20,5 +22,12 @@ public class Parametros {
 
     public ArrayList<String> getLista(){
         return this.Lista;
+    }
+
+    public void setRetorno(String retorno) {
+        this.retorno = retorno;
+    }
+    public String getRetorno(){
+        return retorno;
     }
 }

@@ -31,14 +31,14 @@ decl_local_global : declaracao_local | declaracao_global;
 
 declaracao_local : 'declare' variavel # declaracao_local_variavel |
                     'constante' nome=IDENT ':' tipo_basico '=' valor_constante  # declaracao_local_constante|
-                    'tipo' nome1=IDENT ':' tipo # declaracao_local_tipo;
+                        'tipo' nome1=IDENT ':' tipo # declaracao_local_tipo;
 
 variavel : nome5=identificador_var (',' (lista_mais_var+=identificador_var | IDENT) )* ':' tipo;
 
 
-identificador_var : nome2=IDENT ('.' IDENT)* dimensao;
+identificador_var : nome2=IDENT ('.' tipoRegistro=IDENT)* dimensao;
 
-identificador : nome3=IDENT ('.' IDENT)* dimensao;
+identificador : nome3=IDENT ('.' tipoRegistro=IDENT)* dimensao;
 
 dimensao : ('[' exp_aritmetica ']')*;
 
@@ -92,7 +92,7 @@ cmdEnquanto : 'enquanto' expressao 'faca' cmd* 'fim_enquanto';
 cmdFaca : 'faca' cmd*'ate' expressao;
 
 
-cmdAtribuicao : '^'? identificador '<-' expressao;
+cmdAtribuicao : ponteiro='^'? identificador '<-' expressao;
 
 cmdChamada : IDENT '(' expressao (','expressao)* ')';
 
@@ -113,13 +113,14 @@ numero_intervalo : op_unario? NUM_INT ('..' op_unario? NUM_INT)?;
 
 op_unario : '-';
 
-exp_aritmetica : termo1=termo (op1 outrosTermos+=termo)* ;
-termo : fator1=fator (op2 outrosFatores+=fator)*;
+exp_aritmetica : termo1=termo (op1 outrosTermos=termo)* ;
 
-fator : parcela1=parcela (op3 outrasParcelas+=parcela)*;
+termo : fator1=fator (op2 outrosFatores=fator)*;
+
+fator : parcela1=parcela (op3 outrasParcelas=parcela)*;
 parcela : op_unario? parcela_unario | parcela_nao_unario;
 
-parcela_unario : parcela_unario_identificador | parcela_unario_ident | parcela_unario_int | parcela_unario_real | parcela_unario_exp;
+parcela_unario : parcela_unario_identificador | parcela_unario_ident | parcela_unario_int | parcela_unario_real |  parcela_unario_exp;
 
 parcela_unario_identificador: '^'? identificador;
 parcela_unario_ident: IDENT '(' expressao (',' expressao)* ')';
@@ -132,9 +133,9 @@ parcela_nao_unario : '&' identificador | oi=CADEIA ;
 
 exp_relacional : exp1=exp_aritmetica (op_relacional outrasExpressoes=exp_aritmetica)?;
 
-expressao : termo_logico1=termo_logico (op_logico_1 outrosTermos_Logicos+=termo_logico)*;
+expressao : termo_logico1=termo_logico (op_logico_1 outrosTermos_Logicos=termo_logico)*;
 
 
-termo_logico : fator_logico1=fator_logico (op_logico_2 outrosFatores_Logicos+=fator_logico)*;
+termo_logico : fator_logico1=fator_logico (op_logico_2 outrosFatores_Logicos=fator_logico)*;
 fator_logico : 'nao'? parcela_logica;
-parcela_logica : ('verdadeiro' | 'falso') | exp_relacional;
+parcela_logica : valores_logicos=('verdadeiro' | 'falso') | exp_relacional;

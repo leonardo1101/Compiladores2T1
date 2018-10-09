@@ -1,17 +1,14 @@
-import java.security.Signature;
 import java.util.ArrayList;
 import java.util.List;
 
+public class Registro {
 
-public class TabelaDeSimbolos {
-    private String escopo;
-    private List<EntradaTabelaDeSimbolos> simbolos;
-    private String tipoEscopo;
+    private String nome;
+    public List<EntradaTabelaDeSimbolos> simbolos;
 
-    public TabelaDeSimbolos(String escopo) {
+    public Registro(String nome) {
         simbolos = new ArrayList<EntradaTabelaDeSimbolos>();
-        this.escopo = escopo;
-        this.tipoEscopo = "";
+        this.nome = nome;
     }
 
     public void adicionarSimbolo(String nome, String tipo) {
@@ -40,19 +37,17 @@ public class TabelaDeSimbolos {
         }
         return false;
     }
-    public String getEscopo(){
-        return escopo;
+    public String getNome(){
+        return nome;
+    }
+    public void setNome(String n){
+        nome = n;
     }
 
-    public String getTipoEscopo(){
-        return tipoEscopo;
-    }
-    public void setTipoEscopo(String te){
-        tipoEscopo = te;
-    }
+
     @Override
     public String toString() {
-        String ret = "Escopo: "+escopo;
+        String ret = "Nome: "+nome;
         for(EntradaTabelaDeSimbolos etds:simbolos) {
             ret += "\n   "+etds;
         }
