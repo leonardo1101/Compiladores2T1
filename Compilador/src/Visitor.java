@@ -15,7 +15,7 @@ public class Visitor extends LABaseVisitor {
     // Lista que contem listas com todos os parametros de uma função ou procedimento
     List<Parametros> listaP = new ArrayList<>();
 
-    LinkedList<List<String>> pilhaTipo = new LinkedList<>();
+    //Objeto registo para lidar semanticamente com registros
     Registro registro = new Registro("");
 
     // Seta a stream de tokens
@@ -24,6 +24,7 @@ public class Visitor extends LABaseVisitor {
     }
 
 
+    //Visit para o inicio do programa
     @Override
     public Object visitPrograma(LAParser.ProgramaContext ctx) {
         pilhaDeTabelas.empilhar(new TabelaDeSimbolos("global"));
@@ -34,6 +35,7 @@ public class Visitor extends LABaseVisitor {
 
         return null;
     }
+    //Visitt para trata o retorno
     @Override public String visitCmdRetorne(LAParser.CmdRetorneContext ctx) {
         if(pilhaDeTabelas.topo()!= null)
             if(pilhaDeTabelas.topo().getEscopo().equals("global") || pilhaDeTabelas.topo().getTipoEscopo().equals("procedimento"))
@@ -42,7 +44,7 @@ public class Visitor extends LABaseVisitor {
         return "";
     }
 
-
+    //Visit para a declaraç�o de constantes, verificando se j� fora declarado anteriormente
     @Override
     public Object visitDeclaracao_local_constante(LAParser.Declaracao_local_constanteContext ctx) {
         TabelaDeSimbolos escopoAtual = pilhaDeTabelas.topo();
@@ -59,6 +61,7 @@ public class Visitor extends LABaseVisitor {
 
         return null;
     }
+    //Visit para registo, adicionando o nome para o objeto e tambem cada variavel do registro
     @Override
     public String visitRegistro(LAParser.RegistroContext ctx) {
         if (registro == null)
@@ -73,7 +76,8 @@ public class Visitor extends LABaseVisitor {
         return "";
     }
 
-        @Override
+    //Visitor pra quando e definido o registro
+    @Override
     public Object visitDeclaracao_local_tipo(LAParser.Declaracao_local_tipoContext ctx) {
         registro.setNome(ctx.nome1.getText());
 
@@ -81,7 +85,7 @@ public class Visitor extends LABaseVisitor {
 
         return null;
     }
-
+    //Visit para o Procedimento, armazenando em um objeto o nome e os parametros utilizados
     @Override
     public Object visitDeclaracao_global_procedimento(LAParser.Declaracao_global_procedimentoContext ctx) {
         pilhaDeTabelas.empilhar(new TabelaDeSimbolos(ctx.IDENT().getText()));
@@ -102,7 +106,7 @@ public class Visitor extends LABaseVisitor {
 
         return null;
     }
-
+    //Visit para a Funcao, armazenando em um objeto o nome, os parametros utilizados e o retorno
     @Override
     public Object visitDeclaracao_global_funcao(LAParser.Declaracao_global_funcaoContext ctx) {
         pilhaDeTabelas.empilhar(new TabelaDeSimbolos(ctx.IDENT().getText()));
@@ -124,7 +128,7 @@ public class Visitor extends LABaseVisitor {
 
         return null;
     }
-
+    //Visit para o comando de atribuiç�o, verificando se o tipo e valido
     @Override
     public Object visitCmdAtribuicao(LAParser.CmdAtribuicaoContext ctx)  {
         String var = "";
@@ -165,6 +169,7 @@ public class Visitor extends LABaseVisitor {
 
         return null;
     }
+    //Visit variavel, para adicionar a variavel no escopo adequado utilizando a pilha de tabelas
     @Override
     public Object visitVariavel(LAParser.VariavelContext ctx){
         TabelaDeSimbolos escopoAtual = pilhaDeTabelas.topo();
@@ -205,6 +210,7 @@ public class Visitor extends LABaseVisitor {
         return ctx.nome2.getText();
     }
 
+    //Visit para o identificador, verificando se ele fora declarado
     @Override
     public String visitIdentificador(LAParser.IdentificadorContext ctx) {
         if(!pilhaDeTabelas.existeSimbolo(ctx.nome3.getText())) {
@@ -229,7 +235,7 @@ public class Visitor extends LABaseVisitor {
     }
 
 
-
+    //Visit para a parcela unario, verificando se o identificador fora declarado e se a chamada de funcao/procedimento e valida
     @Override
     public String visitParcela_unario_ident(LAParser.Parcela_unario_identContext ctx) {
         String tipo = null;
@@ -273,7 +279,7 @@ public class Visitor extends LABaseVisitor {
         return "";
     }
 
-
+    //vvisit para tipo basico, verificando se o tipo atribuido e valido
     @Override
     public String visitTipo_basico_ident(LAParser.Tipo_basico_identContext ctx) {
         String tipo_basico = "";
@@ -296,7 +302,7 @@ public class Visitor extends LABaseVisitor {
         return null;
     }
 
-
+    //Visit do comando se, para adicionar um novo escopo
     @Override
     public Object visitCmdSe(LAParser.CmdSeContext ctx) {
         pilhaDeTabelas.empilhar(new TabelaDeSimbolos(ctx.expressao().getText())); //????
@@ -307,7 +313,7 @@ public class Visitor extends LABaseVisitor {
 
         return null;
     }
-
+    //Visit do comando caso, para adicionar um novo escopo
     @Override
     public Object visitCmdCaso(LAParser.CmdCasoContext ctx) {
         pilhaDeTabelas.empilhar(new TabelaDeSimbolos(ctx.exp_aritmetica().getText())); //????
@@ -318,7 +324,7 @@ public class Visitor extends LABaseVisitor {
 
         return null;
     }
-
+    //Visit do comando para, para adicionar um novo escopo
     @Override
     public Object visitCmdPara(LAParser.CmdParaContext ctx) {
 
@@ -330,7 +336,7 @@ public class Visitor extends LABaseVisitor {
 
         return null;
     }
-
+    //Visit do comando enquanto, para adicionar um novo escopo
     @Override
     public Object visitCmdEnquanto(LAParser.CmdEnquantoContext ctx) {
 
@@ -342,7 +348,7 @@ public class Visitor extends LABaseVisitor {
 
         return null;
     }
-
+    //Visit do comando faca, para adicionar um novo escopo
     @Override
     public Object visitCmdFaca(LAParser.CmdFacaContext ctx) {
 
@@ -355,7 +361,7 @@ public class Visitor extends LABaseVisitor {
         return null;
     }
 
-
+    //Visit para chamada de funcao/procedimento, verificando se e valido os parametros
     @Override
     public Object visitCmdChamada(LAParser.CmdChamadaContext ctx) {
         int i = 0;
@@ -391,6 +397,7 @@ public class Visitor extends LABaseVisitor {
         return null;
     }
 
+/* As funçoes abaixo servem para verificar o tipo daquele elemento, indo ate o fim da arvore*/
 
     private String verificaTipo(LAParser.ExpressaoContext exp) {
         String tp = "erro";

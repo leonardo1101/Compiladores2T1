@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.SimpleTimeZone;
 
+//Classe para lidar com funcoes e procedimentos
 public class Parametros {
 
     private ArrayList<String> Lista;

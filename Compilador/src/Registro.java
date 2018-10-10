@@ -1,6 +1,8 @@
 import java.util.ArrayList;
 import java.util.List;
 
+
+//Classe para lidar com registros
 public class Registro {
 
     private String nome;
