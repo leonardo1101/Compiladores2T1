@@ -17,16 +17,17 @@ public class GeradorDeCodigo extends LABaseListener {
         saida = "";
     }
 
+    // Insere o texto na mesma linha
     public void concatena(String sentenca){
         saida += sentenca;
     }
 
+    // Insere o texto na mesma linha e quebra a linha
     public void concatenaequebralinha(String sentenca){
         saida += sentenca + "\n";
     }
 
 
-    // E O TIPO LOGICO?
     // Retorna a TAG correspondente ao tipo em C
     public String getTagC(String tipo){
         switch (tipo){
@@ -41,7 +42,6 @@ public class GeradorDeCodigo extends LABaseListener {
         }
     }
 
-    // TODO: E O LOGICO?
     // Retorna o tipo correspondente em C
     public String getTipoC(String tipo){
         switch (tipo){
@@ -82,7 +82,6 @@ public class GeradorDeCodigo extends LABaseListener {
     }
 
     // Coloca cabecalho do codigo
-
     @Override
     public void enterPrograma(LAParser.ProgramaContext context){
         concatenaequebralinha("#include <stdio.h>\n#include <stdlib.h>\n");
@@ -90,6 +89,7 @@ public class GeradorDeCodigo extends LABaseListener {
         pilhaDeTabelas.empilhar(new TabelaDeSimbolos("main"));
     }
 
+    // Inicia o programa
     @Override
     public void enterCorpo(LAParser.CorpoContext context){
         concatenaequebralinha("int main(){");
@@ -111,16 +111,14 @@ public class GeradorDeCodigo extends LABaseListener {
         String tipo = context.tipo().getText();
 
         if (!getTipoC(tipo).equals("null")) {
-            pilhaDeTabelas.topo().adicionarSimbolo(nome, tipo); // adiciono na tabela de simbolos
+            pilhaDeTabelas.topo().adicionarSimbolo(nome, tipo); // adiciona na tabela de simbolos
 
             concatena(getTipoC(tipo.replace("^","")) + " " + nome); // tira o operador de ponteiro pois é feito em outra regra
             if (tipo.equals("literal")) {
                 concatena("[80]"); // NUMERO ARBITRARIO
             }
-            //concatenaequebralinha(";"); // TODO: TRATAR O CASO DE lista de variaveis
         }
         else {
-            System.out.println("to adicionando sim nome = " + nome);
             pilhaDeTabelas.topo().adicionarSimbolo(nome, "registro");
             concatena(tipo + " " + nome);
         }
@@ -130,6 +128,10 @@ public class GeradorDeCodigo extends LABaseListener {
         }
     }
 
+    // Essa funcao é chamada ao sair da regra variavel
+    // ela é reposnsavel por gerar o nome das variaveis,
+    // levando em conta que a ordem em C é tipo identificador
+    // e em LA é identificador : tipo
     @Override
     public void exitVariavel(LAParser.VariavelContext context) {
         for (LAParser.Identificador_varContext mais_var : context.lista_mais_var) {
@@ -176,9 +178,6 @@ public class GeradorDeCodigo extends LABaseListener {
             boolean mais = !context.cmdEscreva().complementoExpr().isEmpty();
 
             if(nome.contains("[")){// caso de vetor
-//                String [] split = nome.split("\\[");
-//                String [] split2 = split[1].split("]");
-//                tipo_nome = split[0];
                 eh_vetor = true;
             }
             else if(nome.contains("(")){ // caso de funcao
@@ -193,14 +192,8 @@ public class GeradorDeCodigo extends LABaseListener {
             if (mais){
 
                 complemento = context.cmdEscreva().complementoExpr(0).expressao().getText();
-                System.out.println("complemento: " + complemento);
                 tipo_complemento = pilhaDeTabelas.topo().getTipo(complemento);
-                System.out.println("tipo_complemento: " + tipo_complemento);
             }
-
-
-            //TODO: Tratar varios casos, como funcao e registro
-
 
             String tipo;
 
@@ -216,8 +209,6 @@ public class GeradorDeCodigo extends LABaseListener {
             if (tipo.equals("null")){
                 tipo = funcoes.getTipo(tipo_nome);
             }
-
-            //TODO: ver se é funcao
 
             // Converte para o especificador corretor em C
             if ((tipo.equals("inteiro")) || (tipo.equals("real")) ||(tipo.equals("literal"))){
@@ -244,9 +235,6 @@ public class GeradorDeCodigo extends LABaseListener {
             if(complemento.contains("\\n")){
                 concatenaequebralinha("printf(\"\\n\");");
             }
-
-            //TODO: fazer o ELSE = default dele
-            //TODO: muuuitas verificacoes nao feitas
         }
         else if (token.equals("se")){
             String expressao = converteOpLogico(context.cmdSe().exprSe.getText());
@@ -276,8 +264,6 @@ public class GeradorDeCodigo extends LABaseListener {
         }
         else if(context.getText().contains("<-")){ // comando de atribuicao
 
-            //nao precisa fazer nada a principio
-            //TODO: VERIFICAR SE PONTEIRO
         }
         else if(token.equals("retorne")){
             concatenaequebralinha("return " + context.cmdRetorne().expressao().getText() + ";");
@@ -287,14 +273,14 @@ public class GeradorDeCodigo extends LABaseListener {
         }
     }
 
+
+    // Faz a geração necessária após o tratamento interno dos comandos da regra cmd
     @Override
     public void exitCmd(LAParser.CmdContext context){
         String token = context.getStart().getText();
         if (token.equals("se")){
-            System.out.println("terminei aqui o se");
             concatenaequebralinha("}");
         }
-        //TODO: colocar aqui o default
         else if (token.equals("caso")){
             if(context.cmdCaso().senao_opcional() == null){
                 concatenaequebralinha("}");
@@ -317,6 +303,7 @@ public class GeradorDeCodigo extends LABaseListener {
         }
     }
 
+    // Regra para os casos do switch case
     @Override
     public void enterItem_selecao(LAParser.Item_selecaoContext context){
         String selecao = context.constantes().getText();
@@ -336,27 +323,27 @@ public class GeradorDeCodigo extends LABaseListener {
     }
 
 
+    // Gera o comando else em caso de if ou o camando default em caso de switch case
     @Override
     public void enterSenao_opcional(LAParser.Senao_opcionalContext context){
         if (switch_default) {
-            System.out.println("entrei aqui no switch case");
             concatenaequebralinha("default:");
             switch_case = false;
         }
         else{
-            System.out.println("nao e sw");
             concatenaequebralinha("}\nelse {");
         }
     }
 
+    //Em caso de switch case é necessario corrigir a identacao
     @Override
     public void exitSenao_opcional(LAParser.Senao_opcionalContext context){
         if (switch_default) {
-            System.out.println("final aqui no switch case");
             concatenaequebralinha("}");
         }
     }
 
+    // Comeca a declaracao de procedimentos
     @Override
     public void enterDeclaracao_global_procedimento(LAParser.Declaracao_global_procedimentoContext context) {
         pilhaDeTabelas.empilhar(new TabelaDeSimbolos("global"));
@@ -364,11 +351,13 @@ public class GeradorDeCodigo extends LABaseListener {
         concatena("void " + nome_proc + " ");
     }
 
+    // Finaliza a declaracao de procedimentos
     @Override
     public void exitDeclaracao_global_procedimento(LAParser.Declaracao_global_procedimentoContext context){
         concatenaequebralinha("}");
     }
 
+    // Comeca a declaracao de funcoes
     @Override
     public void enterDeclaracao_global_funcao(LAParser.Declaracao_global_funcaoContext context){
         pilhaDeTabelas.empilhar(new TabelaDeSimbolos("global"));
@@ -378,24 +367,26 @@ public class GeradorDeCodigo extends LABaseListener {
         funcoes.adicionarSimbolo(nome_func, tipo_retorno);
     }
 
+    // Finaliza a declaracao de funçoes
     @Override
     public void exitDeclaracao_global_funcao(LAParser.Declaracao_global_funcaoContext context){
         concatenaequebralinha("}");
     }
 
-    // regra que inicia a declaração de parâmetros de funções e procedimentos
+    // Regra que inicia a declaração de parâmetros de funções e procedimentos
     @Override
     public void enterParametros(LAParser.ParametrosContext context) {
         concatena("(");
     }
 
 
-    // finaliza a declaração de parâmetros de uma função ou procedimento
+    // Finaliza a declaração de parâmetros de uma função ou procedimento
     @Override
     public void exitParametros(LAParser.ParametrosContext context) {
         concatenaequebralinha("){");
     }
 
+    // Trata a lista de parametros e converte para o tipo correspondente em C
     @Override
     public void enterParametro(LAParser.ParametroContext context){
         String nome = context.nome6.nome3.getText();
@@ -409,16 +400,21 @@ public class GeradorDeCodigo extends LABaseListener {
         }
     }
 
+    // Trata casos especiais de declarações locais, no caso de constantes
+    // As demais são tratadas na regra de variáveis.
     @Override
     public void enterDeclaracao_local_constante(LAParser.Declaracao_local_constanteContext context) {
         concatenaequebralinha("#define " + context.nome.getText() + " " + context.valor_constante().getText());
     }
 
+    // Trata casos especiais de declarações locais, no caso de tipos
+    // As demais são tratadas na regra de variáveis.
     @Override
     public void enterDeclaracao_local_tipo(LAParser.Declaracao_local_tipoContext context){
         concatena("typedef ");
     }
 
+    // Regra que finaliza as declarações locais de tipo
     @Override
     public void exitDeclaracao_local_tipo(LAParser.Declaracao_local_tipoContext context) {
         concatenaequebralinha(context.IDENT().getText() + ";");
@@ -433,7 +429,6 @@ public class GeradorDeCodigo extends LABaseListener {
         } else {
             concatena(context.identificador().getText() + " = " + context.expressao().getText());
         }
-       // concatenaequebralinha(context.identificador().getText() + " = " + context.expressao().getText() + ";");
         concatenaequebralinha(";");
     }
 

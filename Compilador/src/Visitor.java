@@ -7,14 +7,18 @@ import java.util.List;
 
 public class Visitor extends LABaseVisitor {
 
+    // Pilha de tabelas que comporta as variáveis
     PilhaDeTabelas pilhaDeTabelas = new PilhaDeTabelas();
 
     CommonTokenStream cts;
+
+    // Lista que contem listas com todos os parametros de uma função ou procedimento
     List<Parametros> listaP = new ArrayList<>();
-    LinkedList<List<String>> pilhaTipo = new LinkedList<>() ;
+
+    LinkedList<List<String>> pilhaTipo = new LinkedList<>();
     Registro registro = new Registro("");
 
-
+    // Seta a stream de tokens
     public void setTokenStream(CommonTokenStream c){
         cts = c;
     }
@@ -51,7 +55,7 @@ public class Visitor extends LABaseVisitor {
 
         }
 
-        super.visitDeclaracao_local_constante(ctx); // talvez precise deixar isso aqui pra ele visitar os filhos, precisa confirmar
+        super.visitDeclaracao_local_constante(ctx);
 
         return null;
     }
@@ -73,7 +77,7 @@ public class Visitor extends LABaseVisitor {
     public Object visitDeclaracao_local_tipo(LAParser.Declaracao_local_tipoContext ctx) {
         registro.setNome(ctx.nome1.getText());
 
-        super.visitDeclaracao_local_tipo(ctx); // talvez precise deixar isso aqui pra ele visitar os filhos, precisa confirmar
+        super.visitDeclaracao_local_tipo(ctx);
 
         return null;
     }
@@ -221,9 +225,6 @@ public class Visitor extends LABaseVisitor {
 
 
         }
-
-      //  super.visitIdentificador(ctx); // talvez precise deixar isso aqui pra ele visitar os filhos, precisa confirmar
-
         return null;
     }
 
@@ -273,8 +274,6 @@ public class Visitor extends LABaseVisitor {
     }
 
 
-    //NECESSARIO VERIFICAR SE O TIPO EXISTE?
-
     @Override
     public String visitTipo_basico_ident(LAParser.Tipo_basico_identContext ctx) {
         String tipo_basico = "";
@@ -296,8 +295,6 @@ public class Visitor extends LABaseVisitor {
         super.visitTipo_basico_ident(ctx);
         return null;
     }
-
-
 
 
     @Override
@@ -393,7 +390,6 @@ public class Visitor extends LABaseVisitor {
 
         return null;
     }
-
 
 
     private String verificaTipo(LAParser.ExpressaoContext exp) {

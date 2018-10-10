@@ -40,9 +40,6 @@ public class ErrorListener implements ANTLRErrorListener{
 
     @Override
     public void reportAmbiguity(Parser parser, DFA dfa, int i, int i1, boolean b, BitSet bitSet, ATNConfigSet atnConfigSet) {
-     //   if (!this.sp.isModificado()) {
-     //       this.sp.println("Ambiguidade: linha " + i + ":" + i1);
-     //   }
 
     }
 
